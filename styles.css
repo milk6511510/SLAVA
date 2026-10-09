@@ -330,14 +330,9 @@ body.hero-round .product-canvas { opacity: 0; }
   .hero-product-image {
     will-change: transform;
     transform-origin: 50% 50%;
-    filter: drop-shadow(0 26px 22px rgba(0, 0, 0, .42));
-    animation: mobileProductFloat 6s ease-in-out infinite;
-    transition: background-image .45s ease, filter .45s ease;
-  }
-
-  @keyframes mobileProductFloat {
-    0%, 100% { transform: translate3d(0, 0, 0) rotate(-1deg); }
-    50% { transform: translate3d(0, -8px, 0) rotate(1deg); }
+    filter: drop-shadow(0 42px 32px rgba(0, 0, 0, .46));
+    animation: productFloat 6s ease-in-out infinite;
+    transition: transform .5s ease, background-image .45s ease, filter .5s ease;
   }
 }
 
