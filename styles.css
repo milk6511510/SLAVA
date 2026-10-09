@@ -769,20 +769,47 @@ body.hero-round .product-canvas { opacity: 0; }
 }
 
 @media (min-width: 981px) {
-  /* Desktop deliberately uses one untouched raster image in normal document
-     flow. No stage layer, fixed height, crop mask, transform or filter can
-     affect its visible bounds. */
+  /* Desktop keeps the product in normal document flow. The original visual
+     system returns as an absolute overlay, so it can never size or crop the
+     product image beneath it. */
   .hero-stage-wrap {
     overflow: visible;
   }
 
   .hero-stage {
-    display: none !important;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: block !important;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    overflow: visible !important;
+    isolation: isolate;
+    background: none;
+    box-shadow: none;
+    pointer-events: none;
   }
 
+  .hero-stage > .hero-product-image { display: none !important; }
+  .hero-stage > .stage-grid,
+  .hero-stage > .stage-halo,
+  .hero-stage > .stage-waveform,
+  .hero-stage > .stage-readout,
+  .hero-stage > .stage-control,
+  .hero-stage > .stage-badge { pointer-events: none; }
+  .hero-stage > .stage-control { pointer-events: auto; }
+
+  .hero-stage > .stage-readout { top: -42px; }
+  .hero-stage > .stage-waveform { top: -84px; left: 0; }
+  .hero-stage > .stage-badge { top: -84px; right: 0; }
+  .hero-stage > .stage-control { bottom: -78px; }
+
   .hero-product-desktop {
-    position: static;
     display: block;
+    position: relative;
+    z-index: 1;
     width: 100%;
     height: auto;
     max-width: 100%;
