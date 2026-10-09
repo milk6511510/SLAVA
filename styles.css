@@ -325,6 +325,26 @@ body.hero-round .product-canvas { opacity: 0; }
   .photo-note { right: 28px; bottom: 27px; }
 }
 
+/* Restore the original product motion on mobile without changing the repaired desktop composition. */
+@media (max-width: 980px) {
+  .hero-product-image {
+    will-change: transform;
+    transform-origin: 50% 50%;
+    filter: drop-shadow(0 26px 22px rgba(0, 0, 0, .42));
+    animation: mobileProductFloat 6s ease-in-out infinite;
+    transition: background-image .45s ease, filter .45s ease;
+  }
+
+  @keyframes mobileProductFloat {
+    0%, 100% { transform: translate3d(0, 0, 0) rotate(-1deg); }
+    50% { transform: translate3d(0, -8px, 0) rotate(1deg); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-product-image { animation: none; }
+}
+
 @media (max-width: 900px) {
   .coupling-photo { min-height: 480px; aspect-ratio: auto; }
 }
