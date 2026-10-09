@@ -777,24 +777,6 @@ body.hero-round .product-canvas { opacity: 0; }
   }
 
   .hero-stage {
-    display: block;
-    width: 100%;
-    height: auto;
-    min-height: 0;
-    padding: 0;
-    overflow: visible !important;
-    isolation: auto;
-    background: none;
-    box-shadow: none;
-  }
-
-  .hero-stage > .stage-grid,
-  .hero-stage > .stage-halo,
-  .hero-stage > .stage-waveform,
-  .hero-stage > .stage-readout,
-  .hero-stage > .stage-control,
-  .hero-stage > .stage-badge,
-  .hero-stage > .hero-product-image {
     display: none !important;
   }
 
