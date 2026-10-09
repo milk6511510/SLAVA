@@ -31,6 +31,7 @@ function setupLanguage() {
     const soundLabel = $("#sound-toggle .sound-label"); if (soundLabel) soundLabel.textContent = language === "zh" ? (state.soundOn ? "聲音開啟" : "聲音關閉") : (state.soundOn ? "Sound on" : "Sound off");
     const cartLabel = $(".cart-label"); if (cartLabel) cartLabel.textContent = language === "zh" ? "購物袋" : "BAG";
     const meterState = $("#meter-state"); if (meterState) meterState.textContent = state.soundOn ? (language === "zh" ? "播放中" : "PLAYING") : (language === "zh" ? "待機" : "OFFLINE");
+    window.refreshModelLabLanguage?.();
     localStorage.setItem("slava-language", language);
   };
   choices.forEach((choice) => choice.addEventListener("click", () => applyLanguage(choice.dataset.languageChoice)));
@@ -148,21 +149,93 @@ async function setupThree(setProduct) {
   const canvas = $("#product-canvas");
   try {
     const THREE = await import("https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js");
+    const { GLTFLoader } = await import("https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js");
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.18;
+    const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(31, 1, .1, 100); camera.position.set(0, .65, 7.3); camera.lookAt(0, 0, 0);
+    scene.add(new THREE.HemisphereLight(0xffe9d1, 0x121017, 2.05)); const key = new THREE.DirectionalLight(0xffd5a4, 4.2); key.position.set(-3, 4.5, 5); scene.add(key); const rim = new THREE.PointLight(0xb26848, 24, 10); rim.position.set(3, 1.4, 3.4); scene.add(rim); const fill = new THREE.PointLight(0x8798ae, 8, 12); fill.position.set(-3, -2, 2); scene.add(fill);
+    const group = new THREE.Group(); group.rotation.x = -.12; group.rotation.z = -.025; scene.add(group);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(2.15, .012, 12, 120), new THREE.MeshBasicMaterial({ color: 0xc89556, transparent: true, opacity: .2, depthWrite: false })); ring.position.set(0, -.08, -.32); ring.rotation.x = Math.PI * .53; group.add(ring);
+    const particles = new THREE.BufferGeometry(); const points = new Float32Array(100 * 3); for (let i = 0; i < points.length; i += 3) { const radius = 1.8 + Math.random() * 1.05; const angle = Math.random() * Math.PI * 2; points[i] = Math.cos(angle) * radius; points[i+1] = (Math.random() - .5) * .55; points[i+2] = Math.sin(angle) * radius; } particles.setAttribute("position", new THREE.BufferAttribute(points, 3)); group.add(new THREE.Points(particles, new THREE.PointsMaterial({ color: 0xe4b96f, size: .016, transparent: true, opacity: .72 })));
+    let modelRoot = null; let modelScale = 1; let targetRotation = 0; let currentRotation = 0; let pointer = { x: 0, y: 0 }; let dragging = false; let lastX = 0; let lastY = 0;
+    const loader = new GLTFLoader();
+    const showProduct = (id) => { document.body.classList.toggle("hero-round", id === "round"); if (modelRoot) modelRoot.visible = true; };
+    state.scene = { setProduct: showProduct }; setProduct("long");
+    const resize = () => { const bounds = canvas.getBoundingClientRect(); renderer.setSize(bounds.width, bounds.height, false); camera.aspect = bounds.width / Math.max(1, bounds.height); camera.updateProjectionMatrix(); }; window.addEventListener("resize", resize); resize();
+    canvas.addEventListener("pointerdown", (event) => { dragging = true; lastX = event.clientX; lastY = event.clientY; canvas.setPointerCapture(event.pointerId); }); canvas.addEventListener("pointerup", () => { dragging = false; }); canvas.addEventListener("pointercancel", () => { dragging = false; }); canvas.addEventListener("pointermove", (event) => { pointer.x = (event.clientX / window.innerWidth - .5) * 2; pointer.y = (event.clientY / window.innerHeight - .5) * 2; if (dragging) { targetRotation += (event.clientX - lastX) * .012; group.rotation.x = THREE.MathUtils.clamp(group.rotation.x + (event.clientY - lastY) * .004, -.6, .1); lastX = event.clientX; lastY = event.clientY; } });
+    loader.load("assets/models/slava-cello-board.glb", (gltf) => { modelRoot = gltf.scene; const bounds = new THREE.Box3().setFromObject(modelRoot); const center = bounds.getCenter(new THREE.Vector3()); const size = bounds.getSize(new THREE.Vector3()); modelScale = 4.35 / Math.max(size.x, size.y, size.z); modelRoot.position.sub(center).multiplyScalar(modelScale); modelRoot.scale.setScalar(modelScale); modelRoot.traverse((node) => { if (!node.isMesh) return; const materials = Array.isArray(node.material) ? node.material : [node.material]; materials.forEach((material) => { if (material) { material.side = THREE.DoubleSide; material.needsUpdate = true; } }); node.castShadow = true; node.receiveShadow = true; }); group.add(modelRoot); showProduct(state.selected); document.body.classList.add("has-three"); }, undefined, (error) => { console.info("Homepage GLB unavailable; using the static cutout.", error); document.body.classList.add("hero-round"); });
+    const animate = (time) => { currentRotation += (targetRotation - currentRotation) * .08; group.rotation.y = currentRotation + Math.sin(time * .00035) * .055 + pointer.x * .11; if (!dragging) group.rotation.x += ((-.12 + pointer.y * -.06) - group.rotation.x) * .025; ring.rotation.z += .0007; camera.lookAt(0, 0, 0); renderer.render(scene, camera); requestAnimationFrame(animate); }; document.body.classList.add("has-three"); requestAnimationFrame(animate);
+  } catch (error) { console.info("Interactive product layer unavailable; using the static cutout.", error); canvas.style.display = "none"; setProduct("long"); }
+}
+
+async function setupModelLab() {
+  const canvas = $("#model-canvas");
+  if (!canvas) return;
+  const viewer = $(".model-viewer");
+  const status = $("#model-status");
+  const modeReadout = $("#model-mode-readout");
+  const materialReadout = $("#model-material-readout");
+  const modeButtons = $$('[data-model-mode]');
+  const finishButtons = $$('[data-material-focus]');
+  let currentMode = "object";
+  let materialFocus = "all";
+  let refreshLanguage = () => {};
+  window.refreshModelLabLanguage = () => refreshLanguage();
+
+  try {
+    const THREE = await import("https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js");
+    const { GLTFLoader } = await import("https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js");
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); renderer.outputColorSpace = THREE.SRGBColorSpace;
-    const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(28, 1, .1, 100); camera.position.set(0, 0, 6);
-    scene.add(new THREE.AmbientLight(0xffead2, 1.9)); const key = new THREE.DirectionalLight(0xffd9a5, 3); key.position.set(-2, 3, 4); scene.add(key); const rim = new THREE.PointLight(0x9d5a3e, 20, 8); rim.position.set(2, 1, 2); scene.add(rim);
-    const group = new THREE.Group(); scene.add(group); const textureLoader = new THREE.TextureLoader(); const textureCache = {};
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.55, .012, 12, 120), new THREE.MeshBasicMaterial({ color: 0xc89556, transparent: true, opacity: .22, depthWrite: false })); ring.position.z = -.18; ring.rotation.x = Math.PI * .52; group.add(ring);
-    const particles = new THREE.BufferGeometry(); const points = new Float32Array(120 * 3); for (let i = 0; i < points.length; i += 3) { const radius = 1.5 + Math.random() * .85; const angle = Math.random() * Math.PI * 2; points[i] = Math.cos(angle) * radius; points[i+1] = (Math.random() - .5) * .6; points[i+2] = Math.sin(angle) * radius; } particles.setAttribute("position", new THREE.BufferAttribute(points, 3)); group.add(new THREE.Points(particles, new THREE.PointsMaterial({ color: 0xe4b96f, size: .018, transparent: true, opacity: .8 })));
-    const plane = new THREE.Mesh(new THREE.PlaneGeometry(3.7, 2.45), new THREE.MeshStandardMaterial({ transparent: true, roughness: .48, metalness: .08 })); group.add(plane);
-    const loadTexture = (id) => { if (!textureCache[id]) { textureCache[id] = textureLoader.load(products[id].image); textureCache[id].colorSpace = THREE.SRGBColorSpace; } plane.material.map = textureCache[id]; plane.material.needsUpdate = true; plane.scale.set(id === "round" ? .72 : 1, id === "round" ? .72 : 1, 1); };
-    let targetRotation = 0; let currentRotation = 0; let pointer = { x: 0, y: 0 }; let dragging = false; let lastX = 0;
-    const resize = () => { const bounds = canvas.getBoundingClientRect(); renderer.setSize(bounds.width, bounds.height, false); camera.aspect = bounds.width / bounds.height; camera.fov = camera.aspect < 1 ? Math.min(60, 2 * Math.atan((3.7 / 2) / (6 * camera.aspect)) * 180 / Math.PI) : 28; camera.updateProjectionMatrix(); }; window.addEventListener("resize", resize); resize();
-    canvas.addEventListener("pointerdown", (event) => { dragging = true; lastX = event.clientX; canvas.setPointerCapture(event.pointerId); }); canvas.addEventListener("pointerup", () => { dragging = false; }); canvas.addEventListener("pointermove", (event) => { pointer.x = (event.clientX / window.innerWidth - .5) * 2; pointer.y = (event.clientY / window.innerHeight - .5) * 2; if (dragging) { targetRotation += (event.clientX - lastX) * .012; lastX = event.clientX; } });
-    state.scene = { setProduct: (id) => loadTexture(id) }; setProduct("long");
-    const animate = (time) => { currentRotation += (targetRotation - currentRotation) * .08; group.rotation.y = currentRotation + Math.sin(time * .00035) * .06 + pointer.x * .16; group.rotation.x = pointer.y * -.09; ring.rotation.z += .0007; renderer.render(scene, camera); requestAnimationFrame(animate); }; document.body.classList.add("has-three"); requestAnimationFrame(animate);
-  } catch (error) { console.info("Interactive product layer unavailable; using the static cutout.", error); canvas.style.display = "none"; setProduct("long"); }
+    renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+    const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(30, 1, .1, 100); camera.position.set(0, 1.2, 7.3);
+    const target = new THREE.Vector3(0, .1, 0);
+    scene.add(new THREE.HemisphereLight(0xffe5c7, 0x16131a, 1.8));
+    const key = new THREE.DirectionalLight(0xffd3a0, 3.2); key.position.set(-3, 4, 5); scene.add(key);
+    const rim = new THREE.PointLight(0xb06a46, 18, 11); rim.position.set(3, 1.2, 2.7); scene.add(rim);
+    const fill = new THREE.PointLight(0x7e90a6, 9, 12); fill.position.set(-3, -2, 2); scene.add(fill);
+    const stage = new THREE.Group(); scene.add(stage);
+    const orbit = new THREE.Mesh(new THREE.TorusGeometry(2.55, .009, 10, 160), new THREE.MeshBasicMaterial({ color: 0xe4b96f, transparent: true, opacity: .26 }));
+    orbit.rotation.x = Math.PI * .49; orbit.position.z = -.3; stage.add(orbit);
+    const modelGroup = new THREE.Group(); stage.add(modelGroup);
+    const celloGroup = new THREE.Group(); celloGroup.visible = false; stage.add(celloGroup);
+    let modelRoot = null; let baseScale = 1; let targetRotation = 0; let currentRotation = 0; let targetTilt = 0; let currentTilt = 0; let cameraDistance = 7.3; let dragging = false; let lastX = 0; let lastY = 0;
+
+    const makeCello = () => {
+      const shape = new THREE.Shape();
+      shape.moveTo(0, -2.18); shape.bezierCurveTo(-.76, -2.22, -1.22, -1.72, -1.02, -1.08); shape.bezierCurveTo(-.9, -.68, -.52, -.72, -.64, -.2); shape.bezierCurveTo(-.74, .18, -1.05, .45, -.86, .94); shape.bezierCurveTo(-.68, 1.56, -.42, 2.02, 0, 2.16); shape.bezierCurveTo(.42, 2.02, .68, 1.56, .86, .94); shape.bezierCurveTo(1.05, .45, .74, .18, .64, -.2); shape.bezierCurveTo(.52, -.72, .9, -.68, 1.02, -1.08); shape.bezierCurveTo(1.22, -1.72, .76, -2.22, 0, -2.18);
+      const body = new THREE.Mesh(new THREE.ExtrudeGeometry(shape, { depth: .28, bevelEnabled: true, bevelSegments: 3, bevelSize: .06, bevelThickness: .06 }), new THREE.MeshStandardMaterial({ color: 0x6b3f25, roughness: .43, metalness: .02 })); body.position.z = -.08; celloGroup.add(body);
+      const neck = new THREE.Mesh(new THREE.BoxGeometry(.22, 2.65, .12), new THREE.MeshStandardMaterial({ color: 0x3b2118, roughness: .5 })); neck.position.set(0, 3.25, .01); celloGroup.add(neck);
+      const fingerboard = new THREE.Mesh(new THREE.BoxGeometry(.45, 2.35, .09), new THREE.MeshStandardMaterial({ color: 0x111013, roughness: .32, metalness: .06 })); fingerboard.position.set(0, 3.02, .1); celloGroup.add(fingerboard);
+      const tailpiece = new THREE.Mesh(new THREE.ConeGeometry(.33, .65, 32), new THREE.MeshStandardMaterial({ color: 0x0d0d0e, roughness: .28, metalness: .12 })); tailpiece.rotation.x = Math.PI; tailpiece.position.set(0, -1.72, .1); celloGroup.add(tailpiece);
+      [-.075, -.025, .025, .075].forEach((x, index) => { const string = new THREE.Mesh(new THREE.CylinderGeometry(.008 + index * .002, .008 + index * .002, 6.25, 8), new THREE.MeshStandardMaterial({ color: 0xd4b17a, roughness: .22, metalness: .72 })); string.position.set(x, .85, .22); celloGroup.add(string); });
+      const bridge = new THREE.Mesh(new THREE.BoxGeometry(.72, .08, .22), new THREE.MeshStandardMaterial({ color: 0xc18b52, roughness: .46 })); bridge.position.set(0, .45, .2); celloGroup.add(bridge);
+      celloGroup.scale.setScalar(.9);
+    };
+    makeCello();
+
+    const applyMaterialFocus = () => {
+      if (!modelRoot) return;
+      const match = { wood: "maple", brass: "brass", carbon: "carbon" }[materialFocus];
+      modelRoot.traverse((node) => { if (!node.isMesh) return; const materials = Array.isArray(node.material) ? node.material : [node.material]; materials.forEach((material) => { if (!material) return; const name = `${node.name} ${material.name || ""}`.toLowerCase(); const active = materialFocus === "all" || (match && name.includes(match)); material.transparent = materialFocus !== "all"; material.opacity = active ? 1 : .3; if (material.emissive) { material.emissive.setHex(active && materialFocus !== "all" ? (materialFocus === "brass" ? 0x9a5c22 : 0x4b2b1d) : 0x000000); material.emissiveIntensity = active ? .28 : 0; } material.needsUpdate = true; }); });
+      materialReadout.textContent = { all: "WOOD / BRASS / CARBON", wood: "WOOD / SATIN", brass: "BRASS / SOFT POLISH", carbon: "CARBON / DEEP GLOSS" }[materialFocus];
+    };
+    const setMode = (mode) => { currentMode = mode; modeButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.modelMode === mode)); const installation = mode === "installation"; celloGroup.visible = installation; modelGroup.position.set(0, installation ? -1.05 : 0, installation ? .36 : 0); modelGroup.rotation.set(installation ? .1 : 0, 0, installation ? -.08 : 0); modelGroup.scale.setScalar(installation ? baseScale * .28 : baseScale); refreshLanguage(); };
+    modeButtons.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.modelMode)));
+    finishButtons.forEach((button) => button.addEventListener("click", () => { materialFocus = button.dataset.materialFocus; finishButtons.forEach((item) => item.classList.toggle("is-active", item === button)); applyMaterialFocus(); }));
+    refreshLanguage = () => { const language = state.language === "en"; modeReadout.textContent = currentMode === "installation" ? (language ? "CELLO INSTALL / CONCEPT" : "大提琴安裝 / 概念示意") : (language ? "OBJECT VIEW" : "產品本體"); status.textContent = language ? (status.classList.contains("is-ready") ? "GLB / READY" : "GLB / LOADING") : (status.classList.contains("is-ready") ? "GLB / 已載入" : "GLB / 載入中"); };
+
+    const resize = () => { const bounds = canvas.getBoundingClientRect(); renderer.setSize(bounds.width, bounds.height, false); camera.aspect = bounds.width / Math.max(1, bounds.height); camera.updateProjectionMatrix(); };
+    window.addEventListener("resize", resize); resize();
+    canvas.addEventListener("pointerdown", (event) => { dragging = true; lastX = event.clientX; lastY = event.clientY; canvas.setPointerCapture(event.pointerId); }); canvas.addEventListener("pointerup", () => { dragging = false; });
+    canvas.addEventListener("pointermove", (event) => { if (!dragging) return; targetRotation += (event.clientX - lastX) * .012; targetTilt += (event.clientY - lastY) * .008; lastX = event.clientX; lastY = event.clientY; });
+    canvas.addEventListener("wheel", (event) => { event.preventDefault(); cameraDistance = THREE.MathUtils.clamp(cameraDistance + event.deltaY * .004, 4.6, 10); }, { passive: false });
+
+    const loader = new GLTFLoader();
+    loader.load("assets/models/slava-cello-board.glb", (gltf) => { modelRoot = gltf.scene; const bounds = new THREE.Box3().setFromObject(modelRoot); const center = bounds.getCenter(new THREE.Vector3()); const size = bounds.getSize(new THREE.Vector3()); modelRoot.position.sub(center); baseScale = 4.55 / Math.max(size.x, size.y, size.z); modelGroup.add(modelRoot); modelRoot.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } }); viewer.classList.add("has-model"); status.classList.add("is-ready"); refreshLanguage(); applyMaterialFocus(); setMode("object"); }, undefined, (error) => { console.info("GLB viewer unavailable; using the static preview.", error); status.classList.add("is-error"); status.textContent = state.language === "en" ? "GLB / FALLBACK" : "GLB / 預覽模式"; });
+    const animate = (time) => { currentRotation += (targetRotation - currentRotation) * .08; currentTilt += (targetTilt - currentTilt) * .08; stage.rotation.y = currentRotation + (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : Math.sin(time * .00035) * .045); stage.rotation.x = -.26 + THREE.MathUtils.clamp(currentTilt, -.28, .28); stage.rotation.z = -.025; orbit.rotation.z += .00035; camera.position.z += (cameraDistance - camera.position.z) * .08; camera.lookAt(target); renderer.render(scene, camera); requestAnimationFrame(animate); };
+    document.body.classList.add("has-model-lab"); requestAnimationFrame(animate);
+  } catch (error) { console.info("Interactive GLB layer unavailable; using the static preview.", error); status.classList.add("is-error"); status.textContent = state.language === "en" ? "GLB / FALLBACK" : "GLB / 預覽模式"; }
 }
 
 function setupSound() {
@@ -171,5 +244,5 @@ function setupSound() {
   buttons.forEach((button) => button.addEventListener("click", setSound));
 }
 
-function boot() { setupAmbientCanvas(); const setProduct = setupStageControls(); setupLanguage(); setupCart(); setupAccount(); setupReveal(); setupSound(); setupThree(setProduct); }
+function boot() { setupAmbientCanvas(); const setProduct = setupStageControls(); setupLanguage(); setupCart(); setupAccount(); setupReveal(); setupSound(); setupThree(setProduct); setupModelLab(); }
 boot();
