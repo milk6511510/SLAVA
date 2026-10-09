@@ -1,6 +1,6 @@
 const products = {
-  long: { id: "long", name: "LONG", form: "LONG / rectangle", price: 2480, image: "assets/product/slava-long-cutout.png", alt: "SLAVA LONG 木質與黃銅聲音工具" },
-  round: { id: "round", name: "ROUND", form: "ROUND / circle", price: 2880, image: "assets/product/slava-round-cutout.png", alt: "SLAVA ROUND 木質與黃銅聲音工具" },
+  long: { id: "long", name: "LONG", form: "LONG / rectangle", price: 5000, image: "assets/product/slava-long-cutout.png", alt: "SLAVA LONG 木質與黃銅聲音工具" },
+  round: { id: "round", name: "ROUND", form: "ROUND / circle", price: 2500, image: "assets/product/slava-round-cutout.png", alt: "SLAVA ROUND 木質與黃銅聲音工具" },
 };
 
 const $ = (selector, scope = document) => scope.querySelector(selector);
@@ -31,6 +31,7 @@ function setupLanguage() {
     const soundLabel = $("#sound-toggle .sound-label"); if (soundLabel) soundLabel.textContent = language === "zh" ? (state.soundOn ? "聲音開啟" : "聲音關閉") : (state.soundOn ? "Sound on" : "Sound off");
     const cartLabel = $(".cart-label"); if (cartLabel) cartLabel.textContent = language === "zh" ? "購物袋" : "BAG";
     const meterState = $("#meter-state"); if (meterState) meterState.textContent = state.soundOn ? (language === "zh" ? "播放中" : "PLAYING") : (language === "zh" ? "待機" : "OFFLINE");
+    window.refreshPricingLanguage?.();
     window.refreshModelLabLanguage?.();
     localStorage.setItem("slava-language", language);
   };
@@ -45,6 +46,7 @@ function cartEntries() { return Object.values(state.cart).filter((line) => line.
 function cartTotal() { return cartEntries().reduce((sum, line) => sum + line.price * line.quantity, 0); }
 
 function updateCart() {
+  Object.values(state.cart).forEach((line) => { const product = products[line.id]; if (product) Object.assign(line, { ...product, quantity: line.quantity }); });
   const entries = cartEntries();
   const count = entries.reduce((sum, line) => sum + line.quantity, 0);
   $("#cart-count").textContent = count;
@@ -61,6 +63,20 @@ function updateCart() {
     </div>`).join("");
   persistCart();
 }
+
+function refreshProductPricing() {
+  const longPrice = money(products.long.price);
+  const roundPrice = money(products.round.price);
+  const longCardPrice = $('[data-product-card="long"] .product-card-bottom strong');
+  const roundCardPrice = $('[data-product-card="round"] .product-card-bottom strong');
+  const startingPrice = $(".purchase-summary > div strong");
+  if (longCardPrice) longCardPrice.textContent = longPrice;
+  if (roundCardPrice) roundCardPrice.textContent = roundPrice;
+  if (startingPrice) startingPrice.textContent = money(Math.min(products.long.price, products.round.price));
+  const faqPrice = $("#faq .faq-row p");
+  if (faqPrice) faqPrice.textContent = state.language === "en" ? `Current planning prices: LONG ${longPrice} and ROUND ${roundPrice}. Final pricing will be recalculated after material, acoustic, packaging, and fulfilment tests.` : `目前網站採用測試售價：LONG ${longPrice}、ROUND ${roundPrice}。正式募資前會依材料、聲學測試、包裝與物流重新核算。`;
+}
+window.refreshPricingLanguage = refreshProductPricing;
 
 function addToCart(id) {
   const product = products[id];
@@ -139,6 +155,7 @@ function setupAmbientCanvas() {
 }
 
 function setupStageControls() {
+  const stageAngle = $("#stage-product-angle"); if (stageAngle) { stageAngle.dataset.zh = "近看材質"; stageAngle.dataset.en = "MATERIAL DETAIL"; }
   const setProduct = (id) => { state.selected = id; const product = products[id]; $("#stage-product-name").textContent = `${product.name} / 0${id === "long" ? 1 : 2}`; $("#stage-product-form").textContent = product.form; $("#product-fallback").src = product.image; $("#product-fallback").alt = product.alt; state.scene?.setProduct(id); };
   $("#stage-prev").addEventListener("click", () => setProduct(state.selected === "long" ? "round" : "long"));
   $("#stage-next").addEventListener("click", () => setProduct(state.selected === "long" ? "round" : "long"));
@@ -225,10 +242,10 @@ async function setupModelLab() {
       modelRoot.traverse((node) => { if (!node.isMesh) return; const materials = Array.isArray(node.material) ? node.material : [node.material]; materials.forEach((material) => { if (!material) return; const name = `${node.name} ${material.name || ""}`.toLowerCase(); const active = materialFocus === "all" || (match && name.includes(match)); material.transparent = materialFocus !== "all"; material.opacity = active ? 1 : .3; if (material.emissive) { material.emissive.setHex(active && materialFocus !== "all" ? (materialFocus === "brass" ? 0x9a5c22 : 0x4b2b1d) : 0x000000); material.emissiveIntensity = active ? .28 : 0; } material.needsUpdate = true; }); });
       materialReadout.textContent = { all: "WOOD / BRASS / CARBON", wood: "WOOD / SATIN", brass: "BRASS / SOFT POLISH", carbon: "CARBON / DEEP GLOSS" }[materialFocus];
     };
-    const setMode = (mode) => { currentMode = mode; modeButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.modelMode === mode)); const installation = mode === "installation"; celloGroup.visible = installation; modelGroup.position.set(0, installation ? -1.05 : 0, installation ? .36 : 0); modelGroup.rotation.set(installation ? .1 : 0, 0, installation ? -.08 : 0); modelGroup.scale.setScalar(installation ? baseScale * .28 : baseScale); refreshLanguage(); };
+    const setMode = (mode) => { currentMode = mode; modeButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.modelMode === mode)); const installation = mode === "installation"; celloGroup.visible = installation; modelGroup.position.set(0, installation ? -1.65 : 0, installation ? .55 : 0); modelGroup.rotation.set(installation ? .1 : 0, 0, installation ? -.08 : 0); modelGroup.scale.setScalar(installation ? baseScale * .28 : baseScale); target.y = installation ? -.18 : .1; refreshLanguage(); };
     modeButtons.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.modelMode)));
     finishButtons.forEach((button) => button.addEventListener("click", () => { materialFocus = button.dataset.materialFocus; finishButtons.forEach((item) => item.classList.toggle("is-active", item === button)); applyMaterialFocus(); }));
-    refreshLanguage = () => { const language = state.language === "en"; modeReadout.textContent = currentMode === "installation" ? (language ? "CELLO INSTALL / CONCEPT" : "大提琴安裝 / 概念示意") : (language ? "OBJECT VIEW" : "產品本體"); status.textContent = language ? (status.classList.contains("is-ready") ? "GLB / READY" : "GLB / LOADING") : (status.classList.contains("is-ready") ? "GLB / 已載入" : "GLB / 載入中"); };
+    refreshLanguage = () => { const language = state.language === "en"; modeReadout.textContent = currentMode === "installation" ? (language ? "CELLO INSTALL / CONCEPT" : "大提琴安裝 / 概念示意") : (language ? "OBJECT VIEW" : "產品本體"); const installationNote = $(".installation-note p"); if (installationNote) installationNote.textContent = currentMode === "installation" ? (language ? "SLAVA is shown resting beneath the cello tail-end area, as a placement study rather than a final fixing method." : "SLAVA 示意為放在大提琴尾端下方的接觸位置，不是黏在琴面上的最終固定方式。") : (language ? "The cello installation is a concept placement study. Final fixing and acoustic results require on-cello testing." : "大提琴安裝為概念位置示意；實際固定方式與聲學結果，需以琴上測試確認。"); status.textContent = language ? (status.classList.contains("is-ready") ? "GLB / READY" : "GLB / LOADING") : (status.classList.contains("is-ready") ? "GLB / 已載入" : "GLB / 載入中"); };
 
     const resize = () => { const bounds = canvas.getBoundingClientRect(); renderer.setSize(bounds.width, bounds.height, false); camera.aspect = bounds.width / Math.max(1, bounds.height); camera.updateProjectionMatrix(); };
     window.addEventListener("resize", resize); resize();
@@ -242,6 +259,7 @@ async function setupModelLab() {
     canvas.addEventListener("dblclick", () => { targetRotation = 0; targetTilt = 0; cameraDistance = defaultCameraDistance; });
 
     const loader = new GLTFLoader();
+    loader.load("assets/models/cello-cc0.glb", (gltf) => { const celloRoot = gltf.scene; celloRoot.rotation.x = -Math.PI / 2; const bounds = new THREE.Box3().setFromObject(celloRoot); const center = bounds.getCenter(new THREE.Vector3()); const size = bounds.getSize(new THREE.Vector3()); celloRoot.position.sub(center); celloRoot.scale.setScalar(3.9 / Math.max(size.x, size.y, size.z)); celloGroup.children.forEach((child) => { child.visible = false; }); celloRoot.traverse((node) => { if (!node.isMesh) return; node.castShadow = true; node.receiveShadow = true; const materials = Array.isArray(node.material) ? node.material : [node.material]; materials.forEach((material) => { if (!material) return; if (material.color) material.color.setHex(0x6b351f); material.roughness = .34; material.metalness = .04; material.needsUpdate = true; }); }); celloGroup.add(celloRoot); celloGroup.scale.setScalar(.9); }, undefined, (error) => { console.info("CC0 cello asset unavailable; using the concept cello fallback.", error); });
     loader.load("assets/models/slava-cello-board.glb", (gltf) => { modelRoot = gltf.scene; const bounds = new THREE.Box3().setFromObject(modelRoot); const center = bounds.getCenter(new THREE.Vector3()); const size = bounds.getSize(new THREE.Vector3()); modelRoot.position.sub(center); baseScale = 3.4 / Math.max(size.x, size.y, size.z); modelGroup.add(modelRoot); modelRoot.traverse((node) => { if (node.isMesh) { node.castShadow = true; node.receiveShadow = true; } }); viewer.classList.add("has-model"); status.classList.add("is-ready"); refreshLanguage(); applyMaterialFocus(); setMode("object"); }, undefined, (error) => { console.info("GLB viewer unavailable; using the static preview.", error); status.classList.add("is-error"); status.textContent = state.language === "en" ? "GLB / FALLBACK" : "GLB / 預覽模式"; });
     const animate = (time) => { currentRotation += (targetRotation - currentRotation) * .08; currentTilt += (targetTilt - currentTilt) * .08; stage.rotation.y = currentRotation + (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : Math.sin(time * .00035) * .045); stage.rotation.x = -.26 + THREE.MathUtils.clamp(currentTilt, -.28, .28); stage.rotation.z = -.025; orbit.rotation.z += .00035; camera.position.z += (cameraDistance - camera.position.z) * .08; camera.lookAt(target); renderer.render(scene, camera); requestAnimationFrame(animate); };
     document.body.classList.add("has-model-lab"); requestAnimationFrame(animate);
@@ -254,5 +272,5 @@ function setupSound() {
   buttons.forEach((button) => button.addEventListener("click", setSound));
 }
 
-function boot() { setupAmbientCanvas(); const setProduct = setupStageControls(); setupLanguage(); setupCart(); setupAccount(); setupReveal(); setupSound(); setupThree(setProduct); setupModelLab(); }
+function boot() { setupAmbientCanvas(); setupStageControls(); setupLanguage(); setupCart(); setupAccount(); setupReveal(); setupSound(); setupModelLab(); }
 boot();

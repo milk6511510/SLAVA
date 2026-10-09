@@ -1,0 +1,8 @@
+Cello.glb
+
+Source: Sam's Simple Instruments by Sam Meese
+https://sammeese.itch.io/simple-instruments-assets
+License: CC0 1.0 Universal
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Used as a visual installation reference in the SLAVA 3D object lab.
