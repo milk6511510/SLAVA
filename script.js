@@ -6,7 +6,7 @@ const products = {
 const $ = (selector, scope = document) => scope.querySelector(selector);
 const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
 const money = (value) => `NT$ ${value.toLocaleString("zh-TW")}`;
-const state = { selected: "long", cart: JSON.parse(localStorage.getItem("slava-cart") || "{}"), soundOn: false, audio: null, scene: null };
+const state = { selected: "long", cart: JSON.parse(localStorage.getItem("slava-cart") || "{}"), language: localStorage.getItem("slava-language") || "zh", soundOn: false, audio: null, scene: null };
 
 function showToast(message) {
   const toast = $("#toast");
@@ -14,6 +14,27 @@ function showToast(message) {
   toast.classList.add("is-visible");
   window.clearTimeout(showToast.timer);
   showToast.timer = window.setTimeout(() => toast.classList.remove("is-visible"), 2400);
+}
+
+function setupLanguage() {
+  const choices = $$('[data-language-choice]');
+  const textNodes = $$('[data-i18n]');
+  const htmlNodes = $$('[data-i18n-html]');
+  const applyLanguage = (language) => {
+    state.language = language;
+    document.documentElement.lang = language === "zh" ? "zh-Hant" : "en";
+    document.title = language === "zh" ? "SLAVA｜大提琴聲音工具與材質設計" : "SLAVA — Sound tools for cello practice";
+    document.body.dataset.language = language;
+    textNodes.forEach((node) => { node.textContent = node.dataset[language] || node.textContent; });
+    htmlNodes.forEach((node) => { node.innerHTML = node.dataset[`${language}Html`] || node.innerHTML; });
+    choices.forEach((choice) => { const active = choice.dataset.languageChoice === language; choice.classList.toggle("is-active", active); choice.setAttribute("aria-pressed", String(active)); });
+    const soundLabel = $("#sound-toggle .sound-label"); if (soundLabel) soundLabel.textContent = language === "zh" ? (state.soundOn ? "聲音開啟" : "聲音關閉") : (state.soundOn ? "Sound on" : "Sound off");
+    const cartLabel = $(".cart-label"); if (cartLabel) cartLabel.textContent = language === "zh" ? "購物袋" : "BAG";
+    const meterState = $("#meter-state"); if (meterState) meterState.textContent = state.soundOn ? (language === "zh" ? "播放中" : "PLAYING") : (language === "zh" ? "待機" : "OFFLINE");
+    localStorage.setItem("slava-language", language);
+  };
+  choices.forEach((choice) => choice.addEventListener("click", () => applyLanguage(choice.dataset.languageChoice)));
+  applyLanguage(state.language);
 }
 
 function persistCart() { localStorage.setItem("slava-cart", JSON.stringify(state.cart)); }
@@ -137,7 +158,7 @@ async function setupThree(setProduct) {
     const plane = new THREE.Mesh(new THREE.PlaneGeometry(3.7, 2.45), new THREE.MeshStandardMaterial({ transparent: true, roughness: .48, metalness: .08 })); group.add(plane);
     const loadTexture = (id) => { if (!textureCache[id]) { textureCache[id] = textureLoader.load(products[id].image); textureCache[id].colorSpace = THREE.SRGBColorSpace; } plane.material.map = textureCache[id]; plane.material.needsUpdate = true; plane.scale.set(id === "round" ? .72 : 1, id === "round" ? .72 : 1, 1); };
     let targetRotation = 0; let currentRotation = 0; let pointer = { x: 0, y: 0 }; let dragging = false; let lastX = 0;
-    const resize = () => { const bounds = canvas.getBoundingClientRect(); renderer.setSize(bounds.width, bounds.height, false); camera.aspect = bounds.width / bounds.height; camera.updateProjectionMatrix(); }; window.addEventListener("resize", resize); resize();
+    const resize = () => { const bounds = canvas.getBoundingClientRect(); renderer.setSize(bounds.width, bounds.height, false); camera.aspect = bounds.width / bounds.height; camera.fov = camera.aspect < 1 ? Math.min(60, 2 * Math.atan((3.7 / 2) / (6 * camera.aspect)) * 180 / Math.PI) : 28; camera.updateProjectionMatrix(); }; window.addEventListener("resize", resize); resize();
     canvas.addEventListener("pointerdown", (event) => { dragging = true; lastX = event.clientX; canvas.setPointerCapture(event.pointerId); }); canvas.addEventListener("pointerup", () => { dragging = false; }); canvas.addEventListener("pointermove", (event) => { pointer.x = (event.clientX / window.innerWidth - .5) * 2; pointer.y = (event.clientY / window.innerHeight - .5) * 2; if (dragging) { targetRotation += (event.clientX - lastX) * .012; lastX = event.clientX; } });
     state.scene = { setProduct: (id) => loadTexture(id) }; setProduct("long");
     const animate = (time) => { currentRotation += (targetRotation - currentRotation) * .08; group.rotation.y = currentRotation + Math.sin(time * .00035) * .06 + pointer.x * .16; group.rotation.x = pointer.y * -.09; ring.rotation.z += .0007; renderer.render(scene, camera); requestAnimationFrame(animate); }; document.body.classList.add("has-three"); requestAnimationFrame(animate);
@@ -145,10 +166,10 @@ async function setupThree(setProduct) {
 }
 
 function setupSound() {
-  const buttons = [$("#sound-toggle"), $("#hero-sound-trigger"), $("#field-sound-trigger")]; const meter = $("#field"); const meterBars = $("#meter-bars"); for (let i = 0; i < 36; i += 1) { const bar = document.createElement("i"); bar.className = "meter-bar"; bar.style.height = `${18 + Math.random() * 75}%`; bar.style.animationDelay = `${Math.random() * -.8}s`; meterBars.appendChild(bar); }
-  const setSound = async () => { if (!state.audio) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (!AudioContext) return showToast("此瀏覽器不支援空間聲音"); const audioContext = new AudioContext(); const master = audioContext.createGain(); master.gain.value = 0; master.connect(audioContext.destination); const oscillator = audioContext.createOscillator(); oscillator.type = "sine"; oscillator.frequency.value = 108; const overtone = audioContext.createOscillator(); overtone.type = "triangle"; overtone.frequency.value = 432; const warmth = audioContext.createBiquadFilter(); warmth.type = "lowpass"; warmth.frequency.value = 780; oscillator.connect(warmth); overtone.connect(warmth); warmth.connect(master); oscillator.start(); overtone.start(); state.audio = { audioContext, master }; } state.soundOn = !state.soundOn; const { audioContext, master } = state.audio; if (audioContext.state === "suspended") await audioContext.resume(); master.gain.setTargetAtTime(state.soundOn ? .035 : 0, audioContext.currentTime, .4); buttons.forEach((button) => { button.classList.toggle("is-on", state.soundOn); if (button.id === "sound-toggle") { button.setAttribute("aria-pressed", String(state.soundOn)); $(".sound-label", button).textContent = state.soundOn ? "Sound on" : "Sound off"; } }); meter.classList.toggle("is-playing", state.soundOn); $("#meter-state").textContent = state.soundOn ? "PLAYING" : "OFFLINE"; showToast(state.soundOn ? "空間聲音已開啟" : "空間聲音已關閉"); };
+  const buttons = [$("#sound-toggle"), $("#hero-sound-trigger"), $("#field-sound-trigger")]; const meter = $("#field"); const meterBars = $("#meter-bars"); const waveformBars = $("#stage-waveform .waveform-bars"); const heroStage = $("#hero-stage"); for (let i = 0; i < 36; i += 1) { const bar = document.createElement("i"); bar.className = "meter-bar"; bar.style.height = `${18 + Math.random() * 75}%`; bar.style.animationDelay = `${Math.random() * -.8}s`; meterBars.appendChild(bar); } for (let i = 0; i < 28; i += 1) { const bar = document.createElement("i"); bar.style.setProperty("--bar-height", `${20 + Math.random() * 76}%`); bar.style.animationDelay = `${Math.random() * -.85}s`; waveformBars.appendChild(bar); }
+  const setSound = async () => { if (!state.audio) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (!AudioContext) return showToast("此瀏覽器不支援空間聲音"); const audioContext = new AudioContext(); const master = audioContext.createGain(); master.gain.value = 0; master.connect(audioContext.destination); const oscillator = audioContext.createOscillator(); oscillator.type = "sine"; oscillator.frequency.value = 108; const overtone = audioContext.createOscillator(); overtone.type = "triangle"; overtone.frequency.value = 432; const warmth = audioContext.createBiquadFilter(); warmth.type = "lowpass"; warmth.frequency.value = 780; oscillator.connect(warmth); overtone.connect(warmth); warmth.connect(master); oscillator.start(); overtone.start(); state.audio = { audioContext, master }; } state.soundOn = !state.soundOn; const { audioContext, master } = state.audio; if (audioContext.state === "suspended") await audioContext.resume(); master.gain.setTargetAtTime(state.soundOn ? .035 : 0, audioContext.currentTime, .4); buttons.forEach((button) => { button.classList.toggle("is-on", state.soundOn); if (button.id === "sound-toggle") { button.setAttribute("aria-pressed", String(state.soundOn)); $(".sound-label", button).textContent = state.language === "zh" ? (state.soundOn ? "聲音開啟" : "聲音關閉") : (state.soundOn ? "Sound on" : "Sound off"); } }); meter.classList.toggle("is-playing", state.soundOn); heroStage.classList.toggle("is-audio-active", state.soundOn); $("#meter-state").textContent = state.soundOn ? (state.language === "zh" ? "播放中" : "PLAYING") : (state.language === "zh" ? "待機" : "OFFLINE"); showToast(state.soundOn ? (state.language === "zh" ? "空間聲音已開啟" : "Sound space on") : (state.language === "zh" ? "空間聲音已關閉" : "Sound space off")); };
   buttons.forEach((button) => button.addEventListener("click", setSound));
 }
 
-function boot() { setupAmbientCanvas(); const setProduct = setupStageControls(); setupCart(); setupAccount(); setupReveal(); setupSound(); setupThree(setProduct); }
+function boot() { setupAmbientCanvas(); const setProduct = setupStageControls(); setupLanguage(); setupCart(); setupAccount(); setupReveal(); setupSound(); setupThree(setProduct); }
 boot();
