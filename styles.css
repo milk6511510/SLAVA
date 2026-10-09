@@ -274,11 +274,54 @@ body.hero-round .product-fallback { opacity: 1; } body.hero-round .product-canva
 /* Desktop product imagery: reserve the full frame before applying object-fit. */
 @media (min-width: 981px) {
   .hero-stage { overflow: visible; }
-  .product-fallback { top: 5%; left: 0; width: 100%; height: 90%; object-fit: contain; object-position: center; }
+  /* Keep the transparent cutout's intrinsic ratio. A stretched image box makes
+     the visible product look horizontally sliced on wide screens. */
+  .product-fallback {
+    top: 13%;
+    left: 0;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: 90%;
+    object-fit: contain;
+    object-position: center;
+    overflow: visible;
+  }
   .model-viewer { overflow: visible; }
   .model-fallback { left: 5%; top: 12%; width: 90%; height: 76%; object-fit: contain; object-position: center; }
   .product-card-media { height: 430px; min-height: 0; overflow: visible; padding: 24px 36px; }
-  .product-card-media img { width: 100%; height: 100%; max-height: none; object-fit: contain; object-position: center; }
+  .product-card-media img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center;
+    overflow: visible;
+  }
+  .product-card[data-product-card="long"] .product-card-media img {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: none;
+  }
+  .product-card[data-product-card="round"] .product-card-media img {
+    width: auto;
+    height: 382px;
+    max-width: 100%;
+    max-height: 382px;
+  }
+  /* The desktop study needs a wider image lane so the endpin, product and
+     callouts keep the same visual relationship as the mobile composition. */
+  .coupling-grid { grid-template-columns: minmax(0, 1.58fr) minmax(250px, .62fr); gap: 34px; }
+  .coupling-diagram { padding: 28px 28px 24px; }
+  .photo-callout-input { left: 34px; top: 28%; }
+  .photo-callout-input i { width: 150px; }
+  .photo-callout-body { right: 30px; top: 18%; }
+  .photo-callout-contact { right: 15%; bottom: 17%; }
+  .photo-product-card { left: 34px; bottom: 30px; }
+  .photo-note { right: 28px; bottom: 27px; }
 }
 
 @media (max-width: 900px) {
