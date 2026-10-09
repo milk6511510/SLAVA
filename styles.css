@@ -756,6 +756,10 @@ body.hero-round .product-canvas { opacity: 0; }
   pointer-events: none;
 }
 
+.hero-product-desktop {
+  display: none;
+}
+
 @media (max-width: 720px) {
   .hero-stage { padding: 185px 15px 92px; }
 }
@@ -765,9 +769,50 @@ body.hero-round .product-canvas { opacity: 0; }
 }
 
 @media (min-width: 981px) {
-  /* The image is a normal grid item inside this safe area. No absolute top,
-     transform or intrinsic-ratio positioning can move it outside the stage. */
-  .hero-stage { padding: 142px 24px 120px; }
+  /* Desktop deliberately uses one untouched raster image in normal document
+     flow. No stage layer, fixed height, crop mask, transform or filter can
+     affect its visible bounds. */
+  .hero-stage-wrap {
+    overflow: visible;
+  }
+
+  .hero-stage {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    padding: 0;
+    overflow: visible !important;
+    isolation: auto;
+    background: none;
+    box-shadow: none;
+  }
+
+  .hero-stage > .stage-grid,
+  .hero-stage > .stage-halo,
+  .hero-stage > .stage-waveform,
+  .hero-stage > .stage-readout,
+  .hero-stage > .stage-control,
+  .hero-stage > .stage-badge,
+  .hero-stage > .hero-product-image {
+    display: none !important;
+  }
+
+  .hero-product-desktop {
+    position: static;
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: none;
+    margin: 0;
+    object-fit: contain;
+    object-position: center;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    filter: none;
+  }
 }
 
 /* Desktop contact-study header and product identity card. */
