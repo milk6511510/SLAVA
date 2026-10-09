@@ -1,6 +1,6 @@
 const products = {
-  long: { id: "long", name: "LONG", form: "LONG / rectangle", price: 5000, image: "assets/product/slava-long-cutout.png", alt: "SLAVA LONG 木質與黃銅聲音工具" },
-  round: { id: "round", name: "ROUND", form: "ROUND / circle", price: 2500, image: "assets/product/slava-round-cutout.png", alt: "SLAVA ROUND 木質與黃銅聲音工具" },
+  long: { id: "long", name: "LONG", form: "LONG / rectangle", price: 5000, image: "assets/product/slava-long-cutout.png", alt: "SLAVA LONG 黃銅、碳纖維與楓木三層複合結構" },
+  round: { id: "round", name: "ROUND", form: "ROUND / circle", price: 2500, image: "assets/product/slava-round-cutout.png", alt: "SLAVA ROUND 黃銅、碳纖維與楓木三層複合結構" },
 };
 
 const $ = (selector, scope = document) => scope.querySelector(selector);
@@ -28,7 +28,7 @@ function setupLanguage() {
   const applyLanguage = (language) => {
     state.language = language;
     document.documentElement.lang = language === "zh" ? "zh-Hant" : "en";
-    document.title = language === "zh" ? "SLAVA｜大提琴聲音工具與材質設計" : "SLAVA — Sound tools for cello practice";
+    document.title = language === "zh" ? "SLAVA｜三層複合結構大提琴支撐系統" : "SLAVA — Three-layer composite support for cello";
     document.body.dataset.language = language;
     textNodes.forEach((node) => { node.textContent = node.dataset[language] || node.textContent; });
     htmlNodes.forEach((node) => { node.innerHTML = node.dataset[`${language}Html`] || node.innerHTML; });

@@ -583,6 +583,211 @@ body.hero-round .product-canvas { opacity: 0; }
   visibility: visible;
 }
 
-/* `clip` prevents the hero from becoming an internal scroll container when a
-   selector button receives focus. This keeps every overlay locked in place. */
-.hero-stage { overflow: clip; }
+/* Desktop product rendering
+   Use a contained background layer rather than the replaced <img> box. This
+   keeps the complete product visible at every desktop zoom and aspect ratio. */
+.hero-stage-wrap {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.hero-stage {
+  overflow: hidden !important;
+  isolation: isolate;
+  contain: paint;
+}
+
+.stage-product-frame {
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.stage-product-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 34px 28px rgba(0, 0, 0, .46));
+  animation: productFloat 6s ease-in-out infinite;
+  transform-origin: center;
+  pointer-events: none;
+}
+
+.stage-product-frame[data-stage-product="long"]::before {
+  background-image: url("assets/product/slava-long-cutout.png");
+}
+
+.stage-product-frame[data-stage-product="round"]::before {
+  background-image: url("assets/product/slava-round-cutout.png");
+}
+
+.stage-product-frame .product-fallback,
+.stage-product-frame .product-fallback.is-active {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  max-width: 1px !important;
+  max-height: 1px !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  overflow: hidden !important;
+  clip-path: inset(50%);
+  animation: none !important;
+}
+
+/* Product cards use the same non-cropping layer on desktop. */
+@media (min-width: 981px) {
+  .stage-product-frame {
+    inset: 150px 34px 112px;
+  }
+
+  .product-card-media {
+    isolation: isolate;
+  }
+
+  .product-card-media::before {
+    content: "";
+    position: absolute;
+    inset: 46px;
+    z-index: 1;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    filter: drop-shadow(0 28px 24px rgba(0, 0, 0, .22));
+    transition: transform .45s ease;
+    pointer-events: none;
+  }
+
+  .product-card[data-product-card="long"] .product-card-media::before {
+    inset-inline: 34px;
+    background-image: url("assets/product/slava-long-cutout.png");
+  }
+
+  .product-card[data-product-card="round"] .product-card-media::before {
+    background-image: url("assets/product/slava-round-cutout.png");
+  }
+
+  .product-card:hover .product-card-media::before {
+    transform: translateY(-4px) scale(1.025);
+  }
+
+  .product-card-media > img {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    max-width: 1px !important;
+    max-height: 1px !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    clip-path: inset(50%);
+  }
+}
+
+@media (min-width: 981px) and (max-height: 760px) {
+  .hero-stage {
+    min-height: 560px;
+  }
+
+  .stage-product-frame {
+    inset-block: 142px 108px;
+  }
+}
+
+.cart-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.material-stack {
+  display: grid;
+  margin-top: 4px;
+}
+
+.material-layer {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 7px;
+  gap: 14px;
+  align-items: stretch;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.material-layer > span {
+  color: var(--brass-light);
+  font: 9px var(--font-mono);
+}
+
+.material-layer strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.material-layer p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.65;
+}
+
+.material-layer i { width: 7px; border-radius: 99px; }
+.material-layer-brass i { background: linear-gradient(180deg, #f0cd91, #a86d38); }
+.material-layer-carbon i { background: repeating-linear-gradient(135deg, #3d4147 0 3px, #111317 3px 6px); }
+.material-layer-maple i { background: linear-gradient(180deg, #d9a66d, #744125); }
+
+/* Stable purchase control: the label never tilts or changes its box size. */
+.product-card .add-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 13px;
+  border: 1px solid rgba(15, 13, 12, .3);
+  border-radius: 999px;
+  background: rgba(8, 8, 10, .045);
+  transition: transform .2s ease, background .2s ease, border-color .2s ease;
+}
+
+.product-card-dark .add-button {
+  border-color: rgba(255, 255, 255, .22);
+  background: rgba(255, 255, 255, .05);
+}
+
+.product-card .add-button .button-label,
+.product-card .add-button:hover .button-label {
+  display: inline-block;
+  margin: 0;
+  transform: none;
+  transition: none;
+}
+
+.product-card .add-button > span:last-child {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  border-radius: 50%;
+  background: rgba(8, 8, 10, .08);
+  line-height: 1;
+}
+
+.product-card-dark .add-button > span:last-child { background: rgba(255, 255, 255, .1); }
+.product-card .add-button:hover { transform: translateY(-2px); background: rgba(200, 149, 86, .16); }
+.product-card .add-button:hover > span:last-child { transform: rotate(90deg); }
+.product-card .add-button:active { transform: scale(.98); }
+
+@media (max-width: 580px) {
+  .material-layer { grid-template-columns: 24px minmax(0, 1fr) 6px; gap: 11px; padding: 14px 0; }
+  .material-layer p { font-size: 10px; }
+}
