@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#08080a" />
+    <meta name="description" content="SLAVA｜為大提琴練習設計的木質、黃銅與碳纖維聲音工具。" />
+    <title>SLAVA — Resonance, in your hands.</title>
+    <link rel="preconnect" href="https://use.typekit.net" />
+    <link rel="stylesheet" href="https://use.typekit.net/gbe4lzj.css" />
+    <link rel="icon" href="assets/brand/slava-logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <canvas class="ambient-canvas" id="ambient-canvas" aria-hidden="true"></canvas>
+    <div class="site-noise" aria-hidden="true"></div>
+
+    <header class="nav-shell" id="top">
+      <a class="brand-lockup" href="#top" aria-label="SLAVA 首頁">
+        <img src="assets/brand/slava-logo.svg" alt="SLAVA" />
+        <span>RESONANCE / 2026</span>
+      </a>
+      <nav class="main-nav" aria-label="主要導覽">
+        <a href="#shop">Objects</a>
+        <a href="#field">Sound field</a>
+        <a href="#story">Material</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="icon-button sound-toggle" id="sound-toggle" type="button" aria-pressed="false" aria-label="開啟空間聲音">
+          <span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span class="sound-label">Sound off</span>
+        </button>
+        <button class="icon-button account-trigger" id="account-trigger" type="button" aria-label="開啟會員帳戶">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.25"></circle><path d="M5.5 20c.7-3.1 2.9-4.8 6.5-4.8s5.8 1.7 6.5 4.8"></path></svg>
+        </button>
+        <button class="cart-trigger" id="cart-trigger" type="button" aria-label="開啟購物車"><span>Bag</span><b id="cart-count">0</b></button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-section" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="kicker"><span class="signal-dot"></span>SLAVA / acoustic object 01</p>
+          <h1 id="hero-title">聲音不是被放大，<em>是被看見。</em></h1>
+          <p class="hero-lede">為大提琴練習而生的聲音工具。木材保留溫度，黃銅捕捉重量，碳纖維讓每一次靠近都更精準。</p>
+          <div class="hero-actions"><a class="button button-brass" href="#shop">探索產品 <span aria-hidden="true">↗</span></a><button class="button button-glass" id="hero-sound-trigger" type="button">進入聲音空間 <span aria-hidden="true">◌</span></button></div>
+          <div class="hero-meta"><span>Hand-shaped in Taiwan</span><span>Wood / Brass / Carbon</span></div>
+        </div>
+
+        <div class="hero-stage-wrap">
+          <div class="hero-stage" id="hero-stage">
+            <div class="stage-grid" aria-hidden="true"></div><div class="stage-halo" aria-hidden="true"></div>
+            <canvas class="product-canvas" id="product-canvas" aria-label="可互動旋轉的 SLAVA 產品展示"></canvas>
+            <img class="product-fallback" id="product-fallback" src="assets/product/slava-long-cutout.png" alt="SLAVA LONG 木質與黃銅聲音工具" />
+            <div class="stage-readout"><span id="stage-product-name">LONG / 01</span><span id="stage-product-angle">ROTATE TO LISTEN</span></div>
+            <div class="stage-control glass-panel"><button class="stage-arrow" id="stage-prev" type="button" aria-label="上一款產品">←</button><div><span>OBJECT SELECTOR</span><strong id="stage-product-form">LONG / rectangle</strong></div><button class="stage-arrow" id="stage-next" type="button" aria-label="下一款產品">→</button></div>
+            <div class="stage-badge glass-panel"><span class="badge-orbit"></span><strong>01</strong><small>prototype<br />series</small></div>
+          </div>
+          <p class="stage-note">Move your cursor to shape the light · Drag or swipe to rotate</p>
+        </div>
+      </section>
+
+      <section class="signal-strip" aria-label="SLAVA 材質特色"><div><span>01</span><strong>Wood</strong><small>hand-warm surface</small></div><div><span>02</span><strong>Brass</strong><small>weighted resonance</small></div><div><span>03</span><strong>Carbon</strong><small>controlled response</small></div><div><span>04</span><strong>Portable</strong><small>practice anywhere</small></div></section>
+
+      <section class="manifesto section-frame reveal" id="story"><div class="section-index">01 / PRACTICE SPACE</div><div class="manifesto-grid"><h2>把練習裡的<br /><em>細節，留給自己。</em></h2><div class="manifesto-copy"><p>真正的聲音經驗，不只發生在舞台。它也在宿舍、教室、客廳與夜裡的一小段時間裡發生。</p><p>SLAVA 將一件小型器材變成空間的一部分，讓你在不打擾世界的時候，更靠近自己的琴。</p><span class="hand-note">listen closer —</span></div></div></section>
+
+      <section class="shop-section section-frame" id="shop"><div class="section-header reveal"><div><div class="section-index">02 / THE OBJECTS</div><h2>選擇你的<br /><em>共鳴形狀。</em></h2></div><p>兩款原型，以不同的輪廓回應同一件事：讓練習更靠近你。</p></div><div class="product-grid">
+        <article class="product-card reveal" data-product-card="long"><div class="product-card-media"><div class="media-index">01</div><img src="assets/product/slava-long-cutout.png" alt="SLAVA LONG 長方形木製聲音工具" loading="lazy" /><div class="media-glow"></div></div><div class="product-card-body"><div class="card-topline"><span>LONG / rectangle</span><span>in stock soon</span></div><h3>LONG</h3><p>水平的木質輪廓，讓黃銅核心成為練習裡安靜但明確的重心。</p><div class="product-card-bottom"><strong>NT$ 2,480</strong><button class="add-button" type="button" data-add="long">加入購物車 <span>+</span></button></div></div></article>
+        <article class="product-card product-card-dark reveal" data-product-card="round"><div class="product-card-media"><div class="media-index">02</div><img src="assets/product/slava-round-cutout.png" alt="SLAVA ROUND 圓形木製聲音工具" loading="lazy" /><div class="media-glow"></div></div><div class="product-card-body"><div class="card-topline"><span>ROUND / circle</span><span>in stock soon</span></div><h3>ROUND</h3><p>圓形木身與同心黃銅結構，把觸感與視線收回一個更凝聚的中心。</p><div class="product-card-bottom"><strong>NT$ 2,880</strong><button class="add-button" type="button" data-add="round">加入購物車 <span>+</span></button></div></div></article>
+      </div></section>
+
+      <section class="field-section section-frame" id="field"><div class="field-orbit orbit-one" aria-hidden="true"></div><div class="field-orbit orbit-two" aria-hidden="true"></div><div class="field-content reveal"><div class="section-index">03 / SOUND FIELD</div><h2>讓空間<br /><em>也開始呼吸。</em></h2><p>開啟聲音，讓介面進入一段低頻、微光與星塵組成的練習空間。這不是背景音樂，是一個讓你慢下來的入口。</p><button class="button button-brass" id="field-sound-trigger" type="button">開啟空間聲音 <span>◌</span></button></div><div class="field-meter glass-panel reveal"><div class="meter-head"><span>AMBIENT / 432Hz</span><span id="meter-state">OFFLINE</span></div><div class="meter-bars" id="meter-bars" aria-hidden="true"></div><div class="meter-foot"><span>low / warm / continuous</span><span id="meter-time">00:00</span></div></div></section>
+
+      <section class="material-section section-frame" aria-labelledby="material-title"><div class="section-header reveal"><div><div class="section-index">04 / MATERIAL STUDY</div><h2 id="material-title">每一種材質，<br /><em>都有自己的節奏。</em></h2></div><p>不是裝飾，是聲音工具的結構語言。</p></div><div class="material-cards"><article class="material-item reveal"><img src="assets/product/slava-round-profile.jpg" alt="SLAVA 木材側面輪廓" loading="lazy" /><div><span>01</span><h3>Wood / 木材</h3><p>保留溫度、重量與手上會記住的紋理。</p></div></article><article class="material-item material-item-feature reveal"><img src="assets/product/slava-brass-carbon.jpg" alt="SLAVA 黃銅與碳纖維核心" loading="lazy" /><div><span>02</span><h3>Brass / 黃銅</h3><p>讓視覺中心成為聲音感受的中心。</p></div></article><article class="material-item reveal"><img src="assets/product/slava-case.jpg" alt="SLAVA 產品與收納盒" loading="lazy" /><div><span>03</span><h3>Ritual / 攜帶</h3><p>帶走的不只是器材，是每一次練習的儀式感。</p></div></article></div></section>
+
+      <section class="purchase-section section-frame" id="purchase"><div class="purchase-card glass-panel reveal"><div class="purchase-copy"><div class="section-index">05 / YOUR FIRST SET</div><h2>一件小物，<br /><em>為下一段練習留位。</em></h2><p>先選擇款式加入購物車，稍後可以在購物袋裡調整數量、登入會員或建立訂單。</p></div><div class="purchase-summary"><div><span>Starting at</span><strong>NT$ 2,480</strong></div><button class="button button-brass" data-add="long" type="button">加入 LONG <span>+</span></button><button class="button button-outline-light" data-add="round" type="button">加入 ROUND <span>+</span></button></div></div></section>
+
+      <section class="faq-section section-frame" id="faq"><div class="section-index">06 / NOTES</div><details class="faq-row reveal" open><summary>價格與產品狀態 <span>+</span></summary><p>目前網站採用測試售價：LONG NT$2,480、ROUND NT$2,880。正式募資前會依材料、聲學測試、包裝與物流重新核算。</p></details><details class="faq-row reveal"><summary>會員與訂單 <span>+</span></summary><p>帳戶、購物車與訂單流程先以可操作的前端體驗呈現，方便確認品牌與購買流程；正式上線時再接會員、金流與訂單資料庫。</p></details><details class="faq-row reveal"><summary>什麼時候可以試用？ <span>+</span></summary><p>完成琴上實測、成本與交期確認後，會優先通知留下意願的學生、老師與演奏者。</p></details></section>
+
+      <section class="closing-section section-frame reveal"><div class="closing-mark"><img src="assets/brand/slava-logo.svg" alt="SLAVA" /></div><h2>Sound,<br /><em>shaped by material.</em></h2><a class="button button-brass" href="#shop">找到你的形狀 <span>↗</span></a></section>
+    </main>
+
+    <aside class="cart-drawer" id="cart-drawer" aria-hidden="true" aria-labelledby="cart-title"><div class="drawer-backdrop" data-close-cart></div><div class="drawer-panel"><div class="drawer-head"><div><span class="section-index">YOUR BAG</span><h2 id="cart-title">購物袋</h2></div><button class="close-button" type="button" data-close-cart aria-label="關閉購物袋">×</button></div><div class="cart-items" id="cart-items"></div><div class="cart-empty" id="cart-empty"><span class="empty-orbit"></span><p>你的購物袋還是空的。</p><a href="#shop" data-close-cart>先看看產品</a></div><div class="cart-footer"><div><span>小計</span><strong id="cart-total">NT$ 0</strong></div><button class="button button-brass button-wide" id="checkout-trigger" type="button" disabled>前往結帳 <span>→</span></button><p>運費與正式付款方式將於上市前確認。</p></div></div></aside>
+
+    <dialog class="modal-shell" id="account-modal" aria-labelledby="account-title"><div class="modal-card"><button class="close-button" type="button" data-close-modal="account-modal" aria-label="關閉會員視窗">×</button><div class="section-index">YOUR PRACTICE SPACE</div><h2 id="account-title">登入你的<br /><em>SLAVA 空間。</em></h2><div class="modal-tabs"><button class="modal-tab is-active" type="button" data-account-tab="login">登入</button><button class="modal-tab" type="button" data-account-tab="signup">建立帳戶</button></div><form class="account-form" id="account-form"><label for="account-email">Email</label><input id="account-email" type="email" placeholder="your@email.com" required /><label for="account-password">密碼</label><input id="account-password" type="password" placeholder="至少 8 個字元" minlength="8" required /><button class="button button-brass button-wide" type="submit" id="account-submit">登入 <span>→</span></button><p class="form-status" id="account-status"></p></form></div></dialog>
+    <dialog class="modal-shell" id="checkout-modal" aria-labelledby="checkout-title"><div class="modal-card"><button class="close-button" type="button" data-close-modal="checkout-modal" aria-label="關閉結帳視窗">×</button><div class="section-index">ORDER / 01</div><h2 id="checkout-title">把它帶進<br /><em>你的練習。</em></h2><form class="account-form" id="checkout-form"><label for="checkout-name">姓名</label><input id="checkout-name" type="text" placeholder="你的姓名" required /><label for="checkout-email">Email</label><input id="checkout-email" type="email" placeholder="your@email.com" required /><label for="checkout-note">給 SLAVA 的話 <span class="optional">選填</span></label><textarea id="checkout-note" rows="3" placeholder="告訴我們你使用哪一種琴、目前的練習情境"></textarea><div class="checkout-total"><span>訂單預估</span><strong id="checkout-total">NT$ 0</strong></div><button class="button button-brass button-wide" type="submit">送出訂單意願 <span>→</span></button><p class="form-status" id="checkout-status"></p></form></div></dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <footer class="site-footer"><div><img src="assets/brand/slava-logo.svg" alt="SLAVA" /><span>Sound, shaped by material.</span></div><span>© 2026 SLAVA / Built for the practice space</span><a href="#top">Back to top ↑</a></footer>
+    <script src="script.js"></script>
+  </body>
+</html>
+

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 180">
+  <rect width="720" height="180" fill="#351924"/>
+  <circle cx="94" cy="90" r="44" fill="none" stroke="#B9824A" stroke-width="5"/>
+  <circle cx="94" cy="90" r="25" fill="none" stroke="#B9824A" stroke-width="3" opacity=".75"/>
+  <circle cx="94" cy="90" r="7" fill="#B9824A"/>
+  <path d="M94 31a59 59 0 0 1 45 21" fill="none" stroke="#F7F2E9" stroke-width="4"/>
+  <text x="178" y="106" fill="#F7F2E9" font-family="Arial, sans-serif" font-size="68" letter-spacing="13">SLAVA</text>
+  <text x="182" y="140" fill="#D5A56F" font-family="Arial, sans-serif" font-size="11" letter-spacing="3">DIRECTION B / RESONANCE CORE</text>
+</svg>
+
