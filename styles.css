@@ -222,3 +222,21 @@ body.hero-round .product-fallback { opacity: 1; } body.hero-round .product-canva
 .purchase-summary .button-brass,
 .purchase-summary .button-brass .button-label,
 .purchase-summary .button-brass > span:last-child { color: #17110d !important; text-shadow: none; }
+
+.sound-compare { position: relative; z-index: 3; display: flex; align-items: end; justify-content: space-between; gap: 15px; margin: 16px 0 0; }
+.sound-compare-label { color: #81776f; font: 8px/1.4 var(--font-en); letter-spacing: .1em; }
+.sound-compare-buttons { display: flex; gap: 6px; }
+.sound-profile-button { display: grid; gap: 3px; min-width: 104px; padding: 8px 10px; border: 1px solid var(--line-soft); border-radius: 12px; background: rgba(255,255,255,.035); color: var(--muted); text-align: left; transition: transform .25s ease, border-color .25s ease, background .25s ease, color .25s ease; }
+.sound-profile-button:hover { transform: translateY(-2px); color: var(--cream); border-color: var(--line); }
+.sound-profile-button strong { color: inherit; font: 11px var(--font-en); letter-spacing: .08em; font-weight: 400; }
+.sound-profile-button small { color: #81776f; font-size: 10px; line-height: 1.35; }
+.sound-profile-button.is-active { color: var(--black); border-color: transparent; background: linear-gradient(110deg, var(--brass-light), #bd7d45); box-shadow: 0 7px 18px rgba(200,149,86,.16); }
+.sound-profile-button.is-active small { color: rgba(23,17,13,.72); }
+.meter-profile-readout { position: absolute; left: 50%; bottom: 12px; z-index: 3; transform: translateX(-50%); color: rgba(244,238,229,.76); font: 8px var(--font-en); letter-spacing: .1em; white-space: nowrap; }
+.field-meter[data-sound-profile="round"] { background: radial-gradient(circle at 50% 43%, rgba(117,100,153,.18), transparent 37%), rgba(13,12,14,.64); }
+.field-meter[data-sound-profile="round"] .meter-glow { background: radial-gradient(circle, rgba(205,183,255,.57), rgba(119,98,184,.17) 38%, transparent 72%); }
+.field-meter[data-sound-profile="round"] .meter-core { border-color: rgba(218,204,255,.9); background: radial-gradient(circle at 38% 34%, #fff5ff, #b69ee8 46%, #3c2e58 100%); box-shadow: 0 0 28px rgba(181,158,237,.62), inset 0 0 10px rgba(255,255,255,.45); }
+.field-meter[data-sound-profile="round"] .meter-orbit-one { border-color: rgba(203,181,255,.43); }
+.field-meter[data-sound-profile="round"] .meter-orbit-two { border-color: rgba(199,187,235,.2); }
+.field-meter[data-sound-profile="round"] .meter-waveform i { background: linear-gradient(180deg, rgba(227,217,255,.2), #c6b2f5, rgba(227,217,255,.2)); }
+@media (max-width: 580px) { .sound-compare { display: grid; gap: 10px; align-items: start; }.sound-compare-buttons { width: 100%; }.sound-profile-button { flex: 1; min-width: 0; }.meter-profile-readout { font-size: 7px; } }

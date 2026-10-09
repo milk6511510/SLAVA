@@ -7,6 +7,11 @@ const $ = (selector, scope = document) => scope.querySelector(selector);
 const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
 const money = (value) => `NT$ ${value.toLocaleString("zh-TW")}`;
 const state = { selected: "long", cart: JSON.parse(localStorage.getItem("slava-cart") || "{}"), language: localStorage.getItem("slava-language") || "zh", soundOn: false, audio: null, scene: null };
+const soundProfiles = {
+  long: { name: "LONG", zh: "深沉／延展", en: "DEEP / EXTENDED", fundamental: 108, harmonic: 432, filter: 780, pan: -0.08, delay: 0.055, spaceGain: 0.1, color: "long" },
+  round: { name: "ROUND", zh: "集中／明亮", en: "FOCUSED / BRIGHT", fundamental: 132, harmonic: 528, filter: 1120, pan: 0.18, delay: 0.115, spaceGain: 0.2, color: "round" },
+};
+const soundProfileCatalog = { long: { ...soundProfiles.long }, round: { ...soundProfiles.round } };
 
 function showToast(message) {
   const toast = $("#toast");
@@ -31,6 +36,7 @@ function setupLanguage() {
     const soundLabel = $("#sound-toggle .sound-label"); if (soundLabel) soundLabel.textContent = language === "zh" ? (state.soundOn ? "聲音開啟" : "聲音關閉") : (state.soundOn ? "Sound on" : "Sound off");
     const cartLabel = $(".cart-label"); if (cartLabel) cartLabel.textContent = language === "zh" ? "購物袋" : "BAG";
     const meterState = $("#meter-state"); if (meterState) meterState.textContent = state.soundOn ? (language === "zh" ? "播放中" : "PLAYING") : (language === "zh" ? "待機" : "OFFLINE");
+    window.refreshSoundLanguage?.();
     window.refreshPricingLanguage?.();
     window.refreshModelLabLanguage?.();
     localStorage.setItem("slava-language", language);
@@ -268,22 +274,62 @@ async function setupModelLab() {
 
 function setupSoundVisual(meter) {
   if (!meter || $(".meter-visual", meter)) return;
+  const chooser = document.createElement("div");
+  chooser.className = "sound-compare";
+  chooser.setAttribute("role", "group");
+  chooser.setAttribute("aria-label", "LONG 與 ROUND 空間音訊比較");
+  chooser.innerHTML = `<span class="sound-compare-label">SOUND PROFILE / 聲場預設</span><div class="sound-compare-buttons"><button type="button" class="sound-profile-button is-active" data-sound-profile="long"><strong>LONG</strong><small>深沉／延展</small></button><button type="button" class="sound-profile-button" data-sound-profile="round"><strong>ROUND</strong><small>集中／明亮</small></button></div>`;
+  $(".meter-head", meter)?.before(chooser);
   const visual = document.createElement("div");
   visual.className = "meter-visual";
   visual.setAttribute("aria-hidden", "true");
   const heights = [28, 42, 35, 56, 72, 48, 34, 64, 82, 58, 39, 69, 88, 52, 31, 47, 76, 63, 44, 70, 36, 55, 80, 50, 33, 61, 74, 45];
-  visual.innerHTML = `<span class="meter-glow"></span><span class="meter-orbit meter-orbit-one"></span><span class="meter-orbit meter-orbit-two"></span><span class="meter-core"><i></i></span><span class="meter-frequency">432<small>Hz</small></span><div class="meter-waveform">${heights.map((height) => `<i style="--wave-height:${height}%"></i>`).join("")}</div>`;
+  visual.innerHTML = `<span class="meter-glow"></span><span class="meter-orbit meter-orbit-one"></span><span class="meter-orbit meter-orbit-two"></span><span class="meter-core"><i></i></span><span class="meter-frequency">432<small>Hz</small></span><span class="meter-profile-readout">LONG / DEEP / EXTENDED</span><div class="meter-waveform">${heights.map((height) => `<i style="--wave-height:${height}%"></i>`).join("")}</div>`;
   $("#meter-bars", meter)?.before(visual);
 }
 
+function applySpatialProfile(audio, profile) {
+  if (!audio?.spatialAttached || !profile) return;
+  const now = audio.audioContext.currentTime;
+  audio.panner.pan.setTargetAtTime(profile.pan, now, 0.28);
+  audio.spaceDelay.delayTime.setTargetAtTime(profile.delay, now, 0.28);
+  audio.spaceGain.gain.setTargetAtTime(profile.spaceGain, now, 0.28);
+}
+
+function attachSpatialAudio(audio, profile) {
+  if (!audio || audio.spatialAttached || !audio.audioContext.createStereoPanner) return;
+  const { audioContext, warmth, master } = audio;
+  warmth.disconnect();
+  const panner = audioContext.createStereoPanner();
+  const spaceDelay = audioContext.createDelay(0.5);
+  const spaceGain = audioContext.createGain();
+  warmth.connect(panner);
+  panner.connect(master);
+  warmth.connect(spaceDelay);
+  spaceDelay.connect(spaceGain);
+  spaceGain.connect(master);
+  audio.panner = panner;
+  audio.spaceDelay = spaceDelay;
+  audio.spaceGain = spaceGain;
+  audio.spatialAttached = true;
+  applySpatialProfile(audio, profile);
+}
+
 function setupSound() {
+  let soundProfileKey = "long";
   const buttons = [$("#sound-toggle"), $("#hero-sound-trigger"), $("#field-sound-trigger")]; const meter = $("#field"); setupSoundVisual(meter); const meterBars = $("#meter-bars"); const waveformBars = $("#stage-waveform .waveform-bars"); const heroStage = $("#hero-stage"); for (let i = 0; i < 36; i += 1) { const bar = document.createElement("i"); bar.className = "meter-bar"; bar.style.height = `${18 + Math.random() * 75}%`; bar.style.animationDelay = `${Math.random() * -.8}s`; meterBars.appendChild(bar); } for (let i = 0; i < 28; i += 1) { const bar = document.createElement("i"); bar.style.setProperty("--bar-height", `${20 + Math.random() * 76}%`); bar.style.animationDelay = `${Math.random() * -.85}s`; waveformBars.appendChild(bar); }
-  const setSound = async () => { if (!state.audio) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (!AudioContext) return showToast("此瀏覽器不支援空間聲音"); const audioContext = new AudioContext(); const master = audioContext.createGain(); master.gain.value = 0; master.connect(audioContext.destination); const oscillator = audioContext.createOscillator(); oscillator.type = "sine"; oscillator.frequency.value = 108; const overtone = audioContext.createOscillator(); overtone.type = "triangle"; overtone.frequency.value = 432; const warmth = audioContext.createBiquadFilter(); warmth.type = "lowpass"; warmth.frequency.value = 780; oscillator.connect(warmth); overtone.connect(warmth); warmth.connect(master); oscillator.start(); overtone.start(); state.audio = { audioContext, master }; } state.soundOn = !state.soundOn; const { audioContext, master } = state.audio; if (audioContext.state === "suspended") await audioContext.resume(); master.gain.setTargetAtTime(state.soundOn ? .035 : 0, audioContext.currentTime, .4); buttons.forEach((button) => { button.classList.toggle("is-on", state.soundOn); if (button.id === "sound-toggle") { button.setAttribute("aria-pressed", String(state.soundOn)); $(".sound-label", button).textContent = state.language === "zh" ? (state.soundOn ? "聲音開啟" : "聲音關閉") : (state.soundOn ? "Sound on" : "Sound off"); } }); meter.classList.toggle("is-playing", state.soundOn); heroStage.classList.toggle("is-audio-active", state.soundOn); $("#meter-state").textContent = state.soundOn ? (state.language === "zh" ? "播放中" : "PLAYING") : (state.language === "zh" ? "待機" : "OFFLINE"); showToast(state.soundOn ? (state.language === "zh" ? "空間聲音已開啟" : "Sound space on") : (state.language === "zh" ? "空間聲音已關閉" : "Sound space off")); };
+  const setSound = async () => { if (!state.audio) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (!AudioContext) return showToast("此瀏覽器不支援空間聲音"); const profile = soundProfileCatalog[soundProfileKey] || soundProfileCatalog.long; const audioContext = new AudioContext(); const master = audioContext.createGain(); master.gain.value = 0; master.connect(audioContext.destination); const oscillator = audioContext.createOscillator(); oscillator.type = "sine"; oscillator.frequency.value = profile.fundamental; const overtone = audioContext.createOscillator(); overtone.type = "triangle"; overtone.frequency.value = profile.harmonic; const warmth = audioContext.createBiquadFilter(); warmth.type = "lowpass"; warmth.frequency.value = profile.filter; oscillator.connect(warmth); overtone.connect(warmth); warmth.connect(master); oscillator.start(); overtone.start(); state.audio = { audioContext, master, oscillator, overtone, warmth }; } state.soundOn = !state.soundOn; const { audioContext, master } = state.audio; if (audioContext.state === "suspended") await audioContext.resume(); master.gain.setTargetAtTime(state.soundOn ? .035 : 0, audioContext.currentTime, .4); buttons.forEach((button) => { button.classList.toggle("is-on", state.soundOn); if (button.id === "sound-toggle") { button.setAttribute("aria-pressed", String(state.soundOn)); $(".sound-label", button).textContent = state.language === "zh" ? (state.soundOn ? "聲音開啟" : "聲音關閉") : (state.soundOn ? "Sound on" : "Sound off"); } }); meter.classList.toggle("is-playing", state.soundOn); heroStage.classList.toggle("is-audio-active", state.soundOn); $("#meter-state").textContent = state.soundOn ? (state.language === "zh" ? "播放中" : "PLAYING") : (state.language === "zh" ? "待機" : "OFFLINE"); showToast(state.soundOn ? (state.language === "zh" ? "空間聲音已開啟" : "Sound space on") : (state.language === "zh" ? "空間聲音已關閉" : "Sound space off")); };
+  const profileButtons = $$(".sound-profile-button", meter);
+  const setSoundProfile = (key) => { const profile = soundProfileCatalog[key] || soundProfileCatalog.long; soundProfileKey = key; profileButtons.forEach((button) => button.classList.toggle("is-active", button.dataset.soundProfile === key)); meter.dataset.soundProfile = key; const profileLabel = $("#meter-profile-label"); const frequency = $(".meter-frequency", meter); const profileReadout = $(".meter-profile-readout", meter); if (profileLabel) profileLabel.textContent = state.language === "zh" ? `空間聲 / ${profile.harmonic}Hz` : `SPACE / ${profile.harmonic}Hz`; if (frequency) frequency.innerHTML = `${profile.harmonic}<small>Hz</small>`; if (profileReadout) profileReadout.textContent = `${profile.name} / ${state.language === "zh" ? profile.zh : profile.en}`; if (state.audio) { const now = state.audio.audioContext.currentTime; state.audio.oscillator.frequency.setTargetAtTime(profile.fundamental, now, .28); state.audio.overtone.frequency.setTargetAtTime(profile.harmonic, now, .28); state.audio.warmth.frequency.setTargetAtTime(profile.filter, now, .28); applySpatialProfile(state.audio, profile); } };
+  profileButtons.forEach((button) => button.addEventListener("click", async () => { setSoundProfile(button.dataset.soundProfile); if (!state.soundOn) await setSound(); attachSpatialAudio(state.audio, soundProfileCatalog[soundProfileKey]); }));
+  window.refreshSoundLanguage = () => setSoundProfile(soundProfileKey);
+  setSoundProfile("long");
   let soundStartedAt = 0;
   const timeNode = $("#meter-time");
   const updateMeterClock = () => { const elapsed = state.soundOn && soundStartedAt ? Math.floor((Date.now() - soundStartedAt) / 1000) : 0; if (timeNode) timeNode.textContent = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`; };
   buttons.forEach((button) => button.addEventListener("click", () => { if (!state.soundOn) soundStartedAt = Date.now(); else soundStartedAt = 0; }));
   window.setInterval(updateMeterClock, 1000);
+  buttons.forEach((button) => button.addEventListener("click", () => window.setTimeout(() => { if (state.audio) attachSpatialAudio(state.audio, soundProfileCatalog[soundProfileKey]); }, 0)));
   buttons.forEach((button) => button.addEventListener("click", setSound));
 }
 
