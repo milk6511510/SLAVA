@@ -801,20 +801,15 @@ body.hero-round .product-canvas { opacity: 0; }
   .hero-stage > .stage-badge { pointer-events: none; }
   .hero-stage > .stage-control { pointer-events: auto; }
 
-  .hero-stage > .stage-readout { top: -42px; }
-  .hero-stage > .stage-waveform { top: -84px; left: 0; }
-  .hero-stage > .stage-badge { top: -84px; right: 0; }
-  .hero-stage > .stage-control { bottom: -78px; }
-
   .hero-product-desktop {
     display: block;
     position: relative;
     z-index: 1;
-    width: 100%;
+    width: calc(100% - 44px);
     height: auto;
-    max-width: 100%;
+    max-width: calc(100% - 44px);
     max-height: none;
-    margin: 0;
+    margin: 120px 22px 105px;
     object-fit: contain;
     object-position: center;
     opacity: 1;
