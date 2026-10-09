@@ -162,7 +162,7 @@ function setupAmbientCanvas() {
 
 function setupStageControls() {
   const stageAngle = $("#stage-product-angle"); if (stageAngle) { stageAngle.dataset.zh = "近看材質"; stageAngle.dataset.en = "MATERIAL DETAIL"; }
-  const setProduct = (id) => { state.selected = id; const product = products[id]; $("#stage-product-name").textContent = `${product.name} / 0${id === "long" ? 1 : 2}`; $("#stage-product-form").textContent = product.form; $("#product-fallback").src = product.image; $("#product-fallback").alt = product.alt; state.scene?.setProduct(id); };
+  const setProduct = (id) => { state.selected = id; const product = products[id]; $("#stage-product-name").textContent = `${product.name} / 0${id === "long" ? 1 : 2}`; $("#stage-product-form").textContent = product.form; const frame = $(".stage-product-frame"); if (frame) frame.dataset.stageProduct = id; $$('[data-stage-product-image]').forEach((image) => image.classList.toggle("is-active", image.dataset.stageProductImage === id)); state.scene?.setProduct(id); };
   $("#stage-prev").addEventListener("click", () => setProduct(state.selected === "long" ? "round" : "long"));
   $("#stage-next").addEventListener("click", () => setProduct(state.selected === "long" ? "round" : "long"));
   return setProduct;
@@ -317,7 +317,7 @@ function attachSpatialAudio(audio, profile) {
 
 function setupSound() {
   let soundProfileKey = "long";
-  const buttons = [$("#sound-toggle"), $("#hero-sound-trigger"), $("#field-sound-trigger")]; const meter = $("#field"); setupSoundVisual(meter); const meterBars = $("#meter-bars"); const waveformBars = $("#stage-waveform .waveform-bars"); const heroStage = $("#hero-stage"); for (let i = 0; i < 36; i += 1) { const bar = document.createElement("i"); bar.className = "meter-bar"; bar.style.height = `${18 + Math.random() * 75}%`; bar.style.animationDelay = `${Math.random() * -.8}s`; meterBars.appendChild(bar); } for (let i = 0; i < 28; i += 1) { const bar = document.createElement("i"); bar.style.setProperty("--bar-height", `${20 + Math.random() * 76}%`); bar.style.animationDelay = `${Math.random() * -.85}s`; waveformBars.appendChild(bar); }
+  const buttons = [$("#sound-toggle"), $("#hero-sound-trigger"), $("#field-sound-trigger")].filter(Boolean); const meter = $("#field"); setupSoundVisual(meter); const meterBars = $("#meter-bars"); const waveformBars = $("#stage-waveform .waveform-bars"); const heroStage = $("#hero-stage"); for (let i = 0; i < 36; i += 1) { const bar = document.createElement("i"); bar.className = "meter-bar"; bar.style.height = `${18 + Math.random() * 75}%`; bar.style.animationDelay = `${Math.random() * -.8}s`; meterBars.appendChild(bar); } for (let i = 0; i < 28; i += 1) { const bar = document.createElement("i"); bar.style.setProperty("--bar-height", `${20 + Math.random() * 76}%`); bar.style.animationDelay = `${Math.random() * -.85}s`; waveformBars.appendChild(bar); }
   meter.classList.add("is-js-animated");
   heroStage.classList.add("is-js-animated");
   const animateSoundField = (timestamp) => { const active = state.soundOn; const meterBarsList = $$(".meter-bar", meter); const fieldWaveList = $$(".meter-waveform i", meter); const stageWaveList = $$("#stage-waveform .waveform-bars i"); meterBarsList.forEach((bar, index) => { const pulse = .35 + ((Math.sin(timestamp * .0042 + index * .72) + 1) / 2) * .65; bar.style.transform = `scaleY(${active ? pulse : .34})`; bar.style.opacity = active ? String(.58 + pulse * .42) : ".42"; }); fieldWaveList.forEach((bar, index) => { const pulse = .28 + ((Math.sin(timestamp * .0038 + index * .58) + 1) / 2) * .72; bar.style.transform = `scaleY(${active ? pulse : .24})`; bar.style.opacity = active ? String(.56 + pulse * .44) : ".42"; }); stageWaveList.forEach((bar, index) => { const pulse = .34 + ((Math.sin(timestamp * .0047 + index * .67) + 1) / 2) * .66; bar.style.transform = `scaleY(${active ? pulse : ".78"})`; bar.style.opacity = active ? String(.62 + pulse * .38) : ".6"; }); requestAnimationFrame(animateSoundField); };
@@ -337,5 +337,31 @@ function setupSound() {
   buttons.forEach((button) => button.addEventListener("click", setSound));
 }
 
-function boot() { setupAmbientCanvas(); setupStageControls(); setupLanguage(); setupCart(); setupAccount(); setupReveal(); setupSound(); setupModelLab(); }
+function setupMobileNav() {
+  const shell = $(".nav-shell");
+  const trigger = $("#mobile-menu-trigger");
+  const panel = $("#mobile-nav");
+  if (!shell || !trigger || !panel) return;
+
+  const setOpen = (open) => {
+    shell.classList.toggle("is-menu-open", open);
+    trigger.setAttribute("aria-expanded", String(open));
+    trigger.setAttribute("aria-label", open ? "關閉網站選單" : "開啟網站選單");
+    panel.setAttribute("aria-hidden", String(!open));
+  };
+
+  trigger.addEventListener("click", () => setOpen(!shell.classList.contains("is-menu-open")));
+  $$("a", panel).forEach((link) => link.addEventListener("click", () => setOpen(false)));
+  document.addEventListener("click", (event) => { if (!shell.contains(event.target)) setOpen(false); });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && shell.classList.contains("is-menu-open")) {
+      setOpen(false);
+      trigger.focus();
+    }
+  });
+  const desktopQuery = window.matchMedia("(min-width: 901px)");
+  desktopQuery.addEventListener?.("change", (event) => { if (event.matches) setOpen(false); });
+}
+
+function boot() { setupAmbientCanvas(); setupStageControls(); setupLanguage(); setupMobileNav(); setupCart(); setupAccount(); setupReveal(); setupSound(); setupModelLab(); }
 boot();

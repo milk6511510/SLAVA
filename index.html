@@ -11,7 +11,7 @@
     <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
     <link rel="icon" href="assets/brand/slava-mark.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/brand/slava-mark.svg" />
-    <link rel="stylesheet" href="styles.css?v=desktop-layout-20261009" />
+    <link rel="stylesheet" href="styles.css?v=responsive-shell-20261009" />
   </head>
   <body>
     <canvas class="ambient-canvas" id="ambient-canvas" aria-hidden="true"></canvas>
@@ -29,9 +29,8 @@
         <a href="#coupling" data-i18n data-zh="聲學原理" data-en="How it works">聲學原理</a>
       </nav>
       <div class="nav-actions">
-        <button class="icon-button sound-toggle" id="sound-toggle" type="button" aria-pressed="false" aria-label="開啟空間聲音">
-          <span class="sound-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-          <span class="sound-label">聲音關閉</span>
+        <button class="icon-button mobile-menu-trigger" id="mobile-menu-trigger" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="開啟網站選單">
+          <span aria-hidden="true"><i></i><i></i></span>
         </button>
         <button class="icon-button account-trigger" id="account-trigger" type="button" aria-label="開啟會員帳戶">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.25"></circle><path d="M5.5 20c.7-3.1 2.9-4.8 6.5-4.8s5.8 1.7 6.5 4.8"></path></svg>
@@ -39,6 +38,12 @@
         <button class="cart-trigger" id="cart-trigger" type="button" aria-label="開啟購物車"><span class="cart-label">購物袋</span><b id="cart-count">0</b></button>
         <div class="language-switcher" role="group" aria-label="語言切換"><button type="button" class="is-active" data-language-choice="zh" aria-pressed="true">中</button><button type="button" data-language-choice="en" aria-pressed="false">EN</button></div>
       </div>
+      <nav class="mobile-nav-panel" id="mobile-nav" aria-label="手機主要導覽" aria-hidden="true">
+        <a href="#shop"><span>01</span><strong data-i18n data-zh="產品" data-en="Objects">產品</strong></a>
+        <a href="#field"><span>02</span><strong data-i18n data-zh="聲音空間" data-en="Sound field">聲音空間</strong></a>
+        <a href="#story"><span>03</span><strong data-i18n data-zh="為什麼選擇" data-en="Why SLAVA">為什麼選擇</strong></a>
+        <a href="#coupling"><span>04</span><strong data-i18n data-zh="聲學原理" data-en="How it works">聲學原理</strong></a>
+      </nav>
     </header>
 
     <main>
@@ -54,7 +59,10 @@
         <div class="hero-stage-wrap">
           <div class="hero-stage" id="hero-stage">
             <div class="stage-grid" aria-hidden="true"></div><div class="stage-halo" aria-hidden="true"></div><div class="stage-waveform" id="stage-waveform" aria-hidden="true"><span class="waveform-label">SPECTRUM / LIVE</span><div class="waveform-bars"></div></div>
-            <img class="product-fallback" id="product-fallback" src="assets/product/slava-long-cutout.png" alt="SLAVA LONG 木質與黃銅聲音工具" />
+            <div class="stage-product-frame" data-stage-product="long">
+              <img class="product-fallback is-active" id="product-fallback" data-stage-product-image="long" src="assets/product/slava-long-cutout.png" alt="SLAVA LONG 木質與黃銅聲音工具" />
+              <img class="product-fallback" data-stage-product-image="round" src="assets/product/slava-round-cutout.png" alt="SLAVA ROUND 木質與黃銅聲音工具" />
+            </div>
             <div class="stage-readout"><span id="stage-product-name">LONG / 01</span><span id="stage-product-angle" data-i18n data-zh="旋轉聆聽" data-en="ROTATE TO LISTEN">旋轉聆聽</span></div>
             <div class="stage-control glass-panel"><button class="stage-arrow" id="stage-prev" type="button" aria-label="上一款產品">←</button><div><span data-i18n data-zh="款式選擇" data-en="OBJECT SELECTOR">款式選擇</span><strong id="stage-product-form">LONG / rectangle</strong></div><button class="stage-arrow" id="stage-next" type="button" aria-label="下一款產品">→</button></div>
             <div class="stage-badge glass-panel"><span class="badge-orbit"></span><strong>01</strong><small>prototype<br />series</small></div>
@@ -110,6 +118,6 @@
     <dialog class="modal-shell" id="checkout-modal" aria-labelledby="checkout-title"><div class="modal-card"><button class="close-button" type="button" data-close-modal="checkout-modal" aria-label="關閉結帳視窗">×</button><div class="section-index" data-i18n data-zh="訂單 / 01" data-en="ORDER / 01">訂單 / 01</div><h2 id="checkout-title" data-i18n-html data-zh-html="把它帶進<br /><em>你的練習。</em>" data-en-html="Bring it into<br /><em>your practice.</em>">把它帶進<br /><em>你的練習。</em></h2><form class="account-form" id="checkout-form"><label for="checkout-name" data-i18n data-zh="姓名" data-en="Name">姓名</label><input id="checkout-name" type="text" placeholder="你的姓名" required /><label for="checkout-email">Email</label><input id="checkout-email" type="email" placeholder="your@email.com" required /><label for="checkout-note" data-i18n data-zh="給 SLAVA 的話" data-en="Message to SLAVA">給 SLAVA 的話 <span class="optional">選填</span></label><textarea id="checkout-note" rows="3" placeholder="告訴我們你使用哪一種琴、目前的練習情境"></textarea><div class="checkout-total"><span data-i18n data-zh="訂單預估" data-en="Estimated total">訂單預估</span><strong id="checkout-total">NT$ 0</strong></div><button class="button button-brass button-wide" type="submit"><span class="button-label" data-i18n data-zh="送出訂單意願" data-en="Submit order request">送出訂單意願</span> <span>→</span></button><p class="form-status" id="checkout-status"></p></form></div></dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <footer class="site-footer"><div><img src="assets/brand/slava-logo.svg" alt="SLAVA" /></div><span>© 2026 SLAVA / <span data-i18n data-zh="為練習而生" data-en="Built for the practice space">為練習而生</span></span><a href="#top" data-i18n data-zh="返回頂端 ↑" data-en="Back to top ↑">返回頂端 ↑</a></footer>
-    <script src="script.js"></script>
+    <script src="script.js?v=responsive-shell-20261009"></script>
   </body>
 </html>
