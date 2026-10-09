@@ -829,8 +829,9 @@ body.hero-round .product-canvas { opacity: 0; }
     object-position: center;
     opacity: 1;
     visibility: visible;
-    transform: none;
-    filter: none;
+    filter: drop-shadow(0 42px 32px rgba(0, 0, 0, .46));
+    animation: productFloat 6s ease-in-out infinite;
+    transition: transform .5s ease, filter .5s ease;
   }
 }
 
