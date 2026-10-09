@@ -6,3 +6,5 @@ node_modules
 *.tmp
 .artifact-runtime
 *.tar.gz
+.openai/
+dist/
