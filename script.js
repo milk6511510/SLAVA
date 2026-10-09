@@ -162,7 +162,7 @@ function setupAmbientCanvas() {
 
 function setupStageControls() {
   const stageAngle = $("#stage-product-angle"); if (stageAngle) { stageAngle.dataset.zh = "近看材質"; stageAngle.dataset.en = "MATERIAL DETAIL"; }
-  const setProduct = (id) => { state.selected = id; const product = products[id]; $("#stage-product-name").textContent = `${product.name} / 0${id === "long" ? 1 : 2}`; $("#stage-product-form").textContent = product.form; const frame = $(".stage-product-frame"); if (frame) frame.dataset.stageProduct = id; $$('[data-stage-product-image]').forEach((image) => image.classList.toggle("is-active", image.dataset.stageProductImage === id)); state.scene?.setProduct(id); };
+  const setProduct = (id) => { state.selected = id; const product = products[id]; $("#stage-product-name").textContent = `${product.name} / 0${id === "long" ? 1 : 2}`; $("#stage-product-form").textContent = product.form; const frame = $(".hero-product-art"); if (frame) frame.dataset.stageProduct = id; $$('[data-stage-product-image]').forEach((image) => image.classList.toggle("is-active", image.dataset.stageProductImage === id)); state.scene?.setProduct(id); };
   $("#stage-prev").addEventListener("click", () => setProduct(state.selected === "long" ? "round" : "long"));
   $("#stage-next").addEventListener("click", () => setProduct(state.selected === "long" ? "round" : "long"));
   return setProduct;
