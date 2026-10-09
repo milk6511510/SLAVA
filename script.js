@@ -266,9 +266,24 @@ async function setupModelLab() {
   } catch (error) { console.info("Interactive GLB layer unavailable; using the static preview.", error); status.classList.add("is-error"); status.textContent = state.language === "en" ? "GLB / FALLBACK" : "GLB / 預覽模式"; }
 }
 
+function setupSoundVisual(meter) {
+  if (!meter || $(".meter-visual", meter)) return;
+  const visual = document.createElement("div");
+  visual.className = "meter-visual";
+  visual.setAttribute("aria-hidden", "true");
+  const heights = [28, 42, 35, 56, 72, 48, 34, 64, 82, 58, 39, 69, 88, 52, 31, 47, 76, 63, 44, 70, 36, 55, 80, 50, 33, 61, 74, 45];
+  visual.innerHTML = `<span class="meter-glow"></span><span class="meter-orbit meter-orbit-one"></span><span class="meter-orbit meter-orbit-two"></span><span class="meter-core"><i></i></span><span class="meter-frequency">432<small>Hz</small></span><div class="meter-waveform">${heights.map((height) => `<i style="--wave-height:${height}%"></i>`).join("")}</div>`;
+  $("#meter-bars", meter)?.before(visual);
+}
+
 function setupSound() {
-  const buttons = [$("#sound-toggle"), $("#hero-sound-trigger"), $("#field-sound-trigger")]; const meter = $("#field"); const meterBars = $("#meter-bars"); const waveformBars = $("#stage-waveform .waveform-bars"); const heroStage = $("#hero-stage"); for (let i = 0; i < 36; i += 1) { const bar = document.createElement("i"); bar.className = "meter-bar"; bar.style.height = `${18 + Math.random() * 75}%`; bar.style.animationDelay = `${Math.random() * -.8}s`; meterBars.appendChild(bar); } for (let i = 0; i < 28; i += 1) { const bar = document.createElement("i"); bar.style.setProperty("--bar-height", `${20 + Math.random() * 76}%`); bar.style.animationDelay = `${Math.random() * -.85}s`; waveformBars.appendChild(bar); }
+  const buttons = [$("#sound-toggle"), $("#hero-sound-trigger"), $("#field-sound-trigger")]; const meter = $("#field"); setupSoundVisual(meter); const meterBars = $("#meter-bars"); const waveformBars = $("#stage-waveform .waveform-bars"); const heroStage = $("#hero-stage"); for (let i = 0; i < 36; i += 1) { const bar = document.createElement("i"); bar.className = "meter-bar"; bar.style.height = `${18 + Math.random() * 75}%`; bar.style.animationDelay = `${Math.random() * -.8}s`; meterBars.appendChild(bar); } for (let i = 0; i < 28; i += 1) { const bar = document.createElement("i"); bar.style.setProperty("--bar-height", `${20 + Math.random() * 76}%`); bar.style.animationDelay = `${Math.random() * -.85}s`; waveformBars.appendChild(bar); }
   const setSound = async () => { if (!state.audio) { const AudioContext = window.AudioContext || window.webkitAudioContext; if (!AudioContext) return showToast("此瀏覽器不支援空間聲音"); const audioContext = new AudioContext(); const master = audioContext.createGain(); master.gain.value = 0; master.connect(audioContext.destination); const oscillator = audioContext.createOscillator(); oscillator.type = "sine"; oscillator.frequency.value = 108; const overtone = audioContext.createOscillator(); overtone.type = "triangle"; overtone.frequency.value = 432; const warmth = audioContext.createBiquadFilter(); warmth.type = "lowpass"; warmth.frequency.value = 780; oscillator.connect(warmth); overtone.connect(warmth); warmth.connect(master); oscillator.start(); overtone.start(); state.audio = { audioContext, master }; } state.soundOn = !state.soundOn; const { audioContext, master } = state.audio; if (audioContext.state === "suspended") await audioContext.resume(); master.gain.setTargetAtTime(state.soundOn ? .035 : 0, audioContext.currentTime, .4); buttons.forEach((button) => { button.classList.toggle("is-on", state.soundOn); if (button.id === "sound-toggle") { button.setAttribute("aria-pressed", String(state.soundOn)); $(".sound-label", button).textContent = state.language === "zh" ? (state.soundOn ? "聲音開啟" : "聲音關閉") : (state.soundOn ? "Sound on" : "Sound off"); } }); meter.classList.toggle("is-playing", state.soundOn); heroStage.classList.toggle("is-audio-active", state.soundOn); $("#meter-state").textContent = state.soundOn ? (state.language === "zh" ? "播放中" : "PLAYING") : (state.language === "zh" ? "待機" : "OFFLINE"); showToast(state.soundOn ? (state.language === "zh" ? "空間聲音已開啟" : "Sound space on") : (state.language === "zh" ? "空間聲音已關閉" : "Sound space off")); };
+  let soundStartedAt = 0;
+  const timeNode = $("#meter-time");
+  const updateMeterClock = () => { const elapsed = state.soundOn && soundStartedAt ? Math.floor((Date.now() - soundStartedAt) / 1000) : 0; if (timeNode) timeNode.textContent = `${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}`; };
+  buttons.forEach((button) => button.addEventListener("click", () => { if (!state.soundOn) soundStartedAt = Date.now(); else soundStartedAt = 0; }));
+  window.setInterval(updateMeterClock, 1000);
   buttons.forEach((button) => button.addEventListener("click", setSound));
 }
 
