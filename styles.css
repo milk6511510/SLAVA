@@ -148,7 +148,7 @@ body.hero-round .product-fallback { opacity: 1; } body.hero-round .product-canva
 }
 
 /* Acoustic coupling diagram */
-.coupling-section { position: relative; overflow: hidden; background: radial-gradient(circle at 78% 26%, rgba(144, 75, 53, .14), transparent 31%), linear-gradient(180deg, rgba(255,255,255,.015), transparent 45%); }
+.coupling-section { position: relative; overflow: hidden; scroll-margin-top: 96px; background: radial-gradient(circle at 78% 26%, rgba(144, 75, 53, .14), transparent 31%), linear-gradient(180deg, rgba(255,255,255,.015), transparent 45%); }
 .coupling-section::before { content: ""; position: absolute; width: 48vw; height: 48vw; max-width: 720px; max-height: 720px; right: -19%; top: 16%; border: 1px solid rgba(237,194,135,.08); border-radius: 50%; transform: rotate(-18deg); pointer-events: none; }
 .coupling-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(280px, .7fr); gap: 24px; align-items: stretch; margin-top: 64px; }
 .coupling-diagram { min-width: 0; margin: 0; padding: 24px 24px 20px; border-radius: 28px; background: radial-gradient(circle at 52% 38%, rgba(200,149,86,.11), transparent 34%), rgba(255,255,255,.035); }
@@ -185,8 +185,8 @@ body.hero-round .product-fallback { opacity: 1; } body.hero-round .product-canva
 .coupling-test-note { display: grid; gap: 9px; margin-top: 30px; padding: 18px 20px; border: 1px solid rgba(237,194,135,.25); border-radius: 17px; background: rgba(200,149,86,.08); }
 .coupling-test-note span { color: var(--brass-light); font: 9px var(--font-en); letter-spacing: .1em; }
 .coupling-test-note strong { color: var(--cream); font-size: 13px; font-weight: 500; line-height: 1.7; }
-@media (max-width: 900px) { .coupling-grid { grid-template-columns: 1fr; }.coupling-points { padding-top: 0; }.coupling-section::before { right: -40%; } }
-@media (max-width: 580px) { .coupling-section { padding-top: 82px; }.coupling-grid { margin-top: 42px; }.coupling-diagram { padding: 18px 15px 17px; border-radius: 22px; }.coupling-diagram-top { font-size: 8px; }.coupling-diagram-top small { font-size: 7px; }.coupling-diagram svg { margin-top: 10px; }.diagram-label-main { font-size: 13px; }.diagram-label-sub { font-size: 8px; }.diagram-product-label { font-size: 8px; }.coupling-diagram figcaption { font-size: 11px; line-height: 1.75; }.coupling-point { grid-template-columns: 31px 1fr; gap: 11px; padding: 20px 0; }.coupling-point h3 { font-size: 18px; }.coupling-point p { font-size: 13px; }.coupling-test-note { margin-top: 24px; padding: 16px; } }
+@media (max-width: 900px) { .coupling-grid { grid-template-columns: 1fr; gap: 40px; }.coupling-points { padding-top: 0; }.coupling-section::before { right: -40%; } }
+@media (max-width: 580px) { .coupling-section { padding-top: 96px; scroll-margin-top: 84px; }.coupling-grid { margin-top: 56px; gap: 36px; }.coupling-diagram { padding: 23px 15px 25px; border-radius: 22px; }.coupling-diagram-top { min-height: 50px; margin: 0 2px 18px; align-items: flex-start; font-size: 8px; line-height: 1.8; }.coupling-diagram-top small { font-size: 7px; }.coupling-diagram svg { margin-top: 10px; }.diagram-label-main { font-size: 13px; }.diagram-label-sub { font-size: 8px; }.diagram-product-label { font-size: 8px; }.coupling-diagram figcaption { margin-top: 11px; padding-top: 22px; font-size: 11px; line-height: 1.75; }.coupling-point { grid-template-columns: 31px 1fr; gap: 11px; padding: 20px 0; }.coupling-point h3 { font-size: 18px; }.coupling-point p { font-size: 13px; }.coupling-test-note { margin-top: 24px; padding: 16px; } }
 
 /* Sound field: a low-frequency visual instrument, not a static meter. */
 .field-meter { overflow: hidden; min-height: 470px; background: radial-gradient(circle at 50% 43%, rgba(200,149,86,.16), transparent 36%), rgba(13,12,14,.64); }
@@ -244,19 +244,6 @@ body.hero-round .product-fallback { opacity: 1; } body.hero-round .product-canva
   object-position: 62% center;
   filter: saturate(.9) contrast(1.04);
 }
-.photo-product-overlay {
-  position: absolute;
-  z-index: 2;
-  left: 63.5%;
-  bottom: 3.5%;
-  width: 18%;
-  max-width: 142px;
-  max-height: none;
-  object-fit: contain;
-  transform: translateX(-50%) perspective(420px) rotateX(68deg) rotateZ(-2deg);
-  transform-origin: center;
-  filter: drop-shadow(0 10px 8px rgba(0,0,0,.55));
-}
 .coupling-photo::after {
   content: "";
   position: absolute;
@@ -300,7 +287,6 @@ body.hero-round .product-fallback { opacity: 1; } body.hero-round .product-canva
 @media (max-width: 580px) {
   .coupling-photo { min-height: 470px; aspect-ratio: auto; border-radius: 20px; }
   .coupling-photo > img:first-child { object-position: 63% center; }
-  .photo-product-overlay { left: 63.5%; bottom: 3%; width: 33%; }
   .photo-callout strong { font-size: 12px; }
   .photo-callout small { font-size: 7px; }
   .photo-callout-input { left: 18px; top: 23%; }
