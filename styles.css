@@ -936,7 +936,7 @@ body.hero-round .product-canvas { opacity: 0; }
   }
 
   .hero-product-desktop {
-    --product-scale: 1;
+    --product-scale: .9;
     position: absolute;
     z-index: 1;
     left: 50%;
