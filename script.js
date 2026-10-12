@@ -13,6 +13,26 @@ const soundProfiles = {
 };
 const soundProfileCatalog = { long: { ...soundProfiles.long }, round: { ...soundProfiles.round } };
 
+const visibleSectionIndices = [
+  { selector: '#story .section-index', zh: '01 / 為什麼選擇 SLAVA', en: '01 / WHY SLAVA' },
+  { selector: '#coupling .section-index', zh: '02 / 支撐與接觸 · SUPPORT & CONTACT', en: '02 / SUPPORT & CONTACT' },
+  { selector: '#shop .section-index', zh: '03 / 產品系列', en: '03 / THE OBJECTS' },
+  { selector: '#field .section-index', zh: '04 / 聲音空間', en: '04 / SOUND FIELD' },
+  { selector: '.material-section .section-index', zh: '05 / 材質研究', en: '05 / MATERIAL STUDY' },
+  { selector: '#purchase .section-index', zh: '06 / 首組產品', en: '06 / YOUR FIRST SET' },
+  { selector: '#faq .section-index', zh: '07 / 常見問題', en: '07 / NOTES' },
+];
+
+function refreshVisibleSectionIndices(language = state.language) {
+  visibleSectionIndices.forEach(({ selector, zh, en }) => {
+    const node = $(selector);
+    if (!node) return;
+    node.dataset.zh = zh;
+    node.dataset.en = en;
+    node.textContent = language === 'zh' ? zh : en;
+  });
+}
+
 function showToast(message) {
   const toast = $("#toast");
   toast.textContent = message;
@@ -32,6 +52,7 @@ function setupLanguage() {
     document.body.dataset.language = language;
     textNodes.forEach((node) => { node.textContent = node.dataset[language] || node.textContent; });
     htmlNodes.forEach((node) => { node.innerHTML = node.dataset[`${language}Html`] || node.innerHTML; });
+    refreshVisibleSectionIndices(language);
     choices.forEach((choice) => { const active = choice.dataset.languageChoice === language; choice.classList.toggle("is-active", active); choice.setAttribute("aria-pressed", String(active)); });
     const soundLabel = $("#sound-toggle .sound-label"); if (soundLabel) soundLabel.textContent = language === "zh" ? (state.soundOn ? "聲音開啟" : "聲音關閉") : (state.soundOn ? "Sound on" : "Sound off");
     const cartLabel = $(".cart-label"); if (cartLabel) cartLabel.textContent = language === "zh" ? "購物袋" : "BAG";
