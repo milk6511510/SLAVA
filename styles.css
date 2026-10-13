@@ -320,9 +320,9 @@ body.hero-round .product-canvas { opacity: 0; }
   .photo-callout-input { left: 4.5%; top: 28%; }
   .photo-callout-input i { width: clamp(300px, 31vw, 420px); transform: rotate(-7deg); }
   .photo-callout-body { right: 4.5%; top: 17%; }
-  .photo-callout-body i { width: clamp(130px, 13vw, 185px); transform: rotate(151deg); }
+  .photo-callout-body i { width: clamp(140px, 13vw, 185px); transform: rotate(-25deg); }
   .photo-callout-contact { right: 12%; bottom: 16%; }
-  .photo-callout-contact i { width: clamp(120px, 12vw, 175px); transform: rotate(165deg); }
+  .photo-callout-contact i { width: clamp(170px, 16vw, 225px); transform: rotate(-8deg); }
   .photo-product-card { left: 34px; bottom: 30px; }
   .photo-note { right: 28px; bottom: 27px; }
 }
