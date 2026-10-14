@@ -317,6 +317,7 @@ body.hero-round .product-canvas { opacity: 0; }
      points in the 3:2 composite. Mobile keeps its own calibrated layout. */
   .coupling-grid { grid-template-columns: minmax(0, 1.58fr) minmax(250px, .62fr); gap: 34px; }
   .coupling-diagram { padding: 28px 28px 24px; }
+  .coupling-photo .photo-callout i { display: none; }
   .photo-callout-input { left: 4.5%; top: 28%; }
   .photo-callout-input i { width: clamp(300px, 31vw, 420px); transform: rotate(-7deg); }
   .photo-callout-body { right: 4.5%; top: 17%; }
